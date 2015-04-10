@@ -35,13 +35,8 @@ class ImageFeatures():
     def load_feature_and_copy_line(self, line_count):
         img_feature = np.load(self.data_path)
         # copy rows
-        self.logger.info("creating image feature matrix")
-        img_features = []
-        for idx, line_count in enumerate(line_count):
-            self.logger.info("image id: %d", idx + 1)
-            for i in xrange(line_count):
-                img_features.append(img_feature[idx])
-        self.img_feature = np.array(img_features)
+        self.img_feature = img_feature.repeat(line_count, axis=0)
+        print self.img_feature.shape
 
     def get_train_data(self, step=2):
 
