@@ -1,1 +1,1 @@
-# GCCA
+# Cross-lingual Sentence Retrieval
