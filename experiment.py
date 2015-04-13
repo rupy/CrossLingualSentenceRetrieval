@@ -6,6 +6,8 @@ import numpy as np
 
 class Experiment:
 
+    PCA_COMPRESS_DIM = 100
+
     def __init__(self):
 
         english_corpus_dir = '../PascalSentenceDataset/english/'
@@ -21,7 +23,8 @@ class Experiment:
             japanese_corpus_dir,
             img_original_dir,
             img_correspondence_path,
-            japanese_original_corpus_dir
+            japanese_original_corpus_dir,
+            Experiment.PCA_COMPRESS_DIM
         )
 
     def fit_changing_step(self, line_flag=False, start_step=1, end_step=25, every_nth=1):

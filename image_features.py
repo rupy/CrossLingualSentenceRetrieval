@@ -12,9 +12,9 @@ from base_feature import BaseFeature
 
 class ImageFeatures(BaseFeature):
 
-    def __init__(self, data_dir, original_dir=None, correspondence_path=None):
+    def __init__(self, data_dir, original_dir=None, correspondence_path=None, compress_dim=None):
 
-        BaseFeature.__init__(self, data_dir, original_dir)
+        BaseFeature.__init__(self, data_dir, original_dir, compress_dim)
 
         self.correspondence_path = correspondence_path
 
@@ -22,6 +22,8 @@ class ImageFeatures(BaseFeature):
         img_feature = np.load(self.data_dir)
         # copy rows
         self.feature = img_feature.repeat(line_count, axis=0)
+        if self.compress_dim is not None:
+            self.feature = self.pca_feature()
         print self.feature.shape
 
     def plot_img_by_id(self, img_id):

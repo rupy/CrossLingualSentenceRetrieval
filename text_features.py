@@ -16,10 +16,10 @@ def int_sort(a,b):
 
 class TextFeatures(BaseFeature):
 
-    def __init__(self, data_dir, original_dir= None, min_df=1):
+    def __init__(self, data_dir, original_dir= None, min_df=1, compress_dim=None):
 
 
-        BaseFeature.__init__(self, data_dir, original_dir)
+        BaseFeature.__init__(self, data_dir, original_dir, compress_dim)
 
         self.vectorizer = CountVectorizer(min_df=min_df)
 
@@ -35,6 +35,8 @@ class TextFeatures(BaseFeature):
         x = self.vectorizer.fit_transform(corpus)
         self.feature = x.toarray()
         self.terms = np.array(self.vectorizer.get_feature_names())
+        if self.compress_dim is not None:
+            self.feature = self.pca_feature()
         print self.feature.shape
 
     def create_bow_feature_with_lines(self):
@@ -49,6 +51,8 @@ class TextFeatures(BaseFeature):
         x = self.vectorizer.fit_transform(corpus_flatten)
         self.feature = x.toarray()
         self.terms = np.array(self.vectorizer.get_feature_names())
+        if self.compress_dim is not None:
+            self.feature = self.pca_feature()
         print self.feature.shape
 
     def read_text_by_id(self, text_id):

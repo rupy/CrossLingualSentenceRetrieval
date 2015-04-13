@@ -18,23 +18,23 @@ class Joint():
 
 
     OUTPUT_DIR = 'output/'
-    CCA_PARAMS_SAVE_DIR = OUTPUT_DIR + 'params/'
+    CCA_PARAMS_SAVE_DIR = OUTPUT_DIR + 'pca/'
 
     LINE_GCCA_DIR = CCA_PARAMS_SAVE_DIR + "line_gcca/"
     LINE_CCA_DIR =  CCA_PARAMS_SAVE_DIR + "line_cca/"
     RAW_GCCA_DIR = CCA_PARAMS_SAVE_DIR + "raw_gcca/"
     RAW_CCA_DIR =  CCA_PARAMS_SAVE_DIR + "raw_cca/"
 
-    def __init__(self, en_dir, img_path, jp_dir, img_original_dir=None, img_correspondence_path=None, jp_original_dir=None):
+    def __init__(self, en_dir, img_path, jp_dir, img_original_dir=None, img_correspondence_path=None, jp_original_dir=None, compress_dim=100):
 
         # log setting
         program = os.path.basename(sys.argv[0])
         self.logger = logging.getLogger(program)
         logging.basicConfig(format='%(asctime)s : %(levelname)s : %(message)s')
 
-        self.english_feature = txt.TextFeatures(en_dir)
-        self.japanese_feature = txt.TextFeatures(jp_dir, jp_original_dir)
-        self.image_feature = img.ImageFeatures(img_path, img_original_dir, img_correspondence_path)
+        self.english_feature = txt.TextFeatures(en_dir, compress_dim=compress_dim)
+        self.japanese_feature = txt.TextFeatures(jp_dir, jp_original_dir, compress_dim=compress_dim)
+        self.image_feature = img.ImageFeatures(img_path, img_original_dir, img_correspondence_path, compress_dim)
         self.gcca = gcca.GCCA()
         self.cca = cca.CCA()
 
@@ -149,12 +149,6 @@ class Joint():
 
     def gcca_nn_j2e(self, j_id, neighbor_num = 10):
 
-        min_dim = min(
-            self.gcca.z_1.shape[1] - 1,
-            self.gcca.z_2.shape[1] - 1,
-            self.gcca.z_3.shape[1] - 1
-        )
-
         min_dim = 30
 
         en_mat, im_mat, jp_mat = self.gcca.z_1[:, :min_dim], self.gcca.z_2[:, :min_dim], self.gcca.z_3[:, :min_dim]
@@ -184,12 +178,6 @@ class Joint():
             print self.english_feature.read_text_by_id(idx + 1)
 
     def gcca_nn_j2i(self, j_id, neighbor_num=10):
-
-        min_dim = min(
-            self.gcca.z_1.shape[1] - 1,
-            self.gcca.z_2.shape[1] - 1,
-            self.gcca.z_3.shape[1] - 1
-        )
 
         min_dim = 30
 
