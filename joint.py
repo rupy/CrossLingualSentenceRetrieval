@@ -25,6 +25,8 @@ class Joint():
     RAW_GCCA_DIR = CCA_PARAMS_SAVE_DIR + "raw_gcca/"
     RAW_CCA_DIR =  CCA_PARAMS_SAVE_DIR + "raw_cca/"
 
+    FEATURE_DIR = OUTPUT_DIR + 'features/'
+
     def __init__(self, en_dir, img_path, jp_dir, img_original_dir=None, img_correspondence_path=None, jp_original_dir=None, compress_dim=100):
 
         # log setting
@@ -53,18 +55,34 @@ class Joint():
             os.mkdir(Joint.RAW_GCCA_DIR)
         if not os.path.isdir(Joint.RAW_CCA_DIR):
             os.mkdir(Joint.RAW_CCA_DIR)
+        if not os.path.isdir(Joint.FEATURE_DIR):
+            os.mkdir(Joint.FEATURE_DIR)
+
+    def process_and_save_features(self, line_flag=False):
+        self.logger.info("processing features")
+        if line_flag:
+            self.english_feature.create_bow_feature_with_lines()
+            self.japanese_feature.create_bow_feature_with_lines()
+            self.image_feature.load_feature_and_copy_line(self.english_feature.line_count)
+        else:
+            self.english_feature.create_bow_feature()
+            self.japanese_feature.create_bow_feature()
+            self.image_feature.load_original_feature()
+        self.logger.info("saving features")
+        self.english_feature.save_processed_feature(Joint.FEATURE_DIR, line_flag)
+        self.japanese_feature.save_processed_feature(Joint.FEATURE_DIR, line_flag)
+        self.image_feature.save_processed_feature(Joint.FEATURE_DIR, line_flag)
+
+    def load_preprocessed_features(self, line_flag=False):
+        self.logger.info("loading features")
+        self.english_feature.load_processed_feature(Joint.FEATURE_DIR, line_flag)
+        self.japanese_feature.load_processed_feature(Joint.FEATURE_DIR, line_flag)
+        self.image_feature.load_processed_feature(Joint.FEATURE_DIR, line_flag)
 
     def cca_fit(self, line_flag=False, step=2, reg_param=0.1):
         self.logger.info("fitting CCA line_flag:%s step:%d reg_param:%f", line_flag, step, reg_param)
 
         self.cca.reg_param = reg_param
-
-        if line_flag:
-            self.english_feature.create_bow_feature_with_lines()
-            self.japanese_feature.create_bow_feature_with_lines()
-        else:
-            self.english_feature.create_bow_feature()
-            self.japanese_feature.create_bow_feature()
 
         self.cca.fit(
             self.english_feature.get_train_data(step),
@@ -81,12 +99,6 @@ class Joint():
 
     def cca_transform(self, line_flag=False, step=2, reg_param=0.1):
         if line_flag:
-            self.english_feature.create_bow_feature_with_lines()
-            self.japanese_feature.create_bow_feature_with_lines()
-        else:
-            self.english_feature.create_bow_feature()
-            self.japanese_feature.create_bow_feature()
-        if line_flag:
             self.cca.load_params(Joint.LINE_CCA_DIR + str(reg_param).replace(".", "_") + '/' + str(step) + '/')
         else:
             self.cca.load_params(Joint.RAW_CCA_DIR + str(reg_param).replace(".", "_") + '/' + str(step) + '/')
@@ -102,14 +114,6 @@ class Joint():
     def gcca_fit(self, line_flag=False, step=2, reg_param=0.1):
         self.logger.info("fitting GCCA line_flag:%s step:%d reg_param:%f", line_flag, step, reg_param)
         self.gcca.reg_param = reg_param
-        if line_flag:
-            self.english_feature.create_bow_feature_with_lines()
-            self.japanese_feature.create_bow_feature_with_lines()
-            self.image_feature.load_feature_and_copy_line(self.english_feature.line_count)
-        else:
-            self.english_feature.create_bow_feature()
-            self.japanese_feature.create_bow_feature()
-            self.image_feature.load_feature()
 
         self.gcca.fit(
             self.english_feature.get_train_data(step),
@@ -128,14 +132,8 @@ class Joint():
     def gcca_transform(self, line_flag=False, step=2, reg_param=0.1):
 
         if line_flag:
-            self.english_feature.create_bow_feature_with_lines()
-            self.japanese_feature.create_bow_feature_with_lines()
-            self.image_feature.load_feature_and_copy_line(self.english_feature.line_count)
             self.gcca.load_params(Joint.LINE_GCCA_DIR + str(reg_param).replace(".", "_") + '/' + str(step) + '/')
         else:
-            self.english_feature.create_bow_feature()
-            self.japanese_feature.create_bow_feature()
-            self.image_feature.load_feature()
             self.gcca.load_params(Joint.RAW_GCCA_DIR + str(reg_param).replace(".", "_") + '/' + str(step) + '/')
 
         self.gcca.transform(

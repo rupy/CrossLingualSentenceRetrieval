@@ -12,11 +12,21 @@ from base_feature import BaseFeature
 
 class ImageFeatures(BaseFeature):
 
+    LINE_FEATURE_FILE = 'line_img_feature.npy'
+    RAW_FEATURE_FILE = 'raw_img_feature.npy'
+
     def __init__(self, data_dir, original_dir=None, correspondence_path=None, compress_dim=None):
 
         BaseFeature.__init__(self, data_dir, original_dir, compress_dim)
 
         self.correspondence_path = correspondence_path
+
+    def load_original_feature(self):
+        self.feature = np.load(self.data_dir)
+        if self.compress_dim is not None:
+            self.feature = self.pca_feature()
+        print self.feature.shape
+
 
     def load_feature_and_copy_line(self, line_count):
         img_feature = np.load(self.data_dir)
@@ -55,4 +65,5 @@ class ImageFeatures(BaseFeature):
             ax.imshow(im)
             ax.text(1, 1, str(i))
         plt.show()
+
 

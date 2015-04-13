@@ -27,7 +27,12 @@ class Experiment:
             Experiment.PCA_COMPRESS_DIM
         )
 
+    def process_features(self):
+        self.joint.process_and_save_features(True)
+        self.joint.process_and_save_features(False)
+
     def fit_changing_step(self, line_flag=False, start_step=1, end_step=25, every_nth=1):
+        self.joint.load_preprocessed_features(line_flag)
 
         for s in range(start_step, end_step, every_nth):
             self.joint.gcca_fit(line_flag=line_flag, step=s)
@@ -52,6 +57,7 @@ class Experiment:
         res_gcca_data = []
         step_list = np.arange(start_step, end_step, every_nth)
 
+        self.joint.load_preprocessed_features(line_flag)
         for step in step_list:
             self.joint.gcca_transform(line_flag=line_flag, step=step, reg_param=reg_param)
             self.joint.cca_transform(line_flag=line_flag, step=step, reg_param=reg_param)
@@ -70,16 +76,18 @@ class Experiment:
         # res_gcca_arr = np.load('output/results/res_gcca_arr.npy')
         self.joint.plot_results(res_cca_arr, res_gcca_arr, step_list, col_num=2)
 
-    def fit_chenging_regparam(self, reg_params, step=5):
+    def fit_chenging_regparam(self, reg_params, step=5, line_flag=False):
+        self.joint.load_preprocessed_features(line_flag)
         for r in reg_params:
-            self.joint.gcca_fit(line_flag=False, step=step, reg_param=r)
-            self.joint.cca_fit(line_flag=False, step=step, reg_param=r)
+            self.joint.gcca_fit(line_flag=line_flag, step=step, reg_param=r)
+            self.joint.cca_fit(line_flag=line_flag, step=step, reg_param=r)
 
     def calc_accuracy_changing_reg_params(self, reg_list, line_flag=False, step=5):
 
         res_cca_data = []
         res_gcca_data = []
 
+        self.joint.load_preprocessed_features(line_flag)
         for reg in reg_list:
             self.joint.gcca_transform(line_flag=line_flag, step=step, reg_param=reg)
             self.joint.cca_transform(line_flag=line_flag, step=step, reg_param=reg)

@@ -12,6 +12,9 @@ from sklearn.decomposition import PCA
 
 class BaseFeature():
 
+    LINE_FEATURE_FILE = 'line_feature.npy'
+    RAW_FEATURE_FILE = 'raw_feature.npy'
+
     def __init__(self, data_dir, original_dir=None, compress_dim=None):
 
         # log setting
@@ -33,12 +36,6 @@ class BaseFeature():
             self.pca = None
         self.feature_pca = None
 
-    def load_feature(self):
-        self.feature = np.load(self.data_dir)
-        if self.compress_dim is not None:
-            self.feature = self.pca_feature()
-        print self.feature.shape
-
     def get_train_data(self, step=2):
         self.logger.info(self.feature[::step].shape)
 
@@ -54,3 +51,13 @@ class BaseFeature():
     def pca_feature(self):
         self.logger.info("compressing feature")
         return self.pca.fit(self.feature).transform(self.feature)
+
+    def save_processed_feature(self, save_dir, line_flag):
+        self.logger.info("saving feature")
+        save_file = self.LINE_FEATURE_FILE if line_flag else self.RAW_FEATURE_FILE
+        np.save(save_dir + str(self.compress_dim) + '_' + save_file, self.feature)
+
+    def load_processed_feature(self, save_dir, line_flag):
+        self.logger.info("load feature")
+        save_file = self.LINE_FEATURE_FILE if line_flag else self.RAW_FEATURE_FILE
+        self.feature = np.load(save_dir + str(self.compress_dim) + '_' + save_file)

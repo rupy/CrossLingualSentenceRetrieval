@@ -16,8 +16,10 @@ def int_sort(a,b):
 
 class TextFeatures(BaseFeature):
 
-    def __init__(self, data_dir, original_dir= None, min_df=1, compress_dim=None):
+    LINE_FEATURE_FILE = 'line_txt_feature.npy'
+    RAW_FEATURE_FILE = 'raw_txt_feature.npy'
 
+    def __init__(self, data_dir, original_dir= None, min_df=1, compress_dim=None):
 
         BaseFeature.__init__(self, data_dir, original_dir, compress_dim)
 
