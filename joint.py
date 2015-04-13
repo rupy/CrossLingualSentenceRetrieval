@@ -79,8 +79,8 @@ class Joint():
             self.japanese_feature.create_bow_feature()
         if mode == 'ALL':
             self.cca.fit(
-                self.english_feature.word_mat,
-                self.japanese_feature.word_mat
+                self.english_feature.feature,
+                self.japanese_feature.feature
             )
             if line_flag:
                 self.cca.save_params(Joint.LINE_CCA_ALL_DIR)
@@ -113,8 +113,8 @@ class Joint():
             else:
                 self.cca.load_params(Joint.RAW_CCA_ALL_DIR)
             self.cca.transform(
-                self.english_feature.word_mat,
-                self.japanese_feature.word_mat
+                self.english_feature.feature,
+                self.japanese_feature.feature
             )
         else:
             if line_flag:
@@ -144,9 +144,9 @@ class Joint():
 
         if mode == 'ALL':
             self.gcca.fit(
-                self.english_feature.word_mat,
-                self.image_feature.img_feature,
-                self.japanese_feature.word_mat
+                self.english_feature.feature,
+                self.image_feature.feature,
+                self.japanese_feature.feature
             )
             if line_flag:
                 self.gcca.save_params(Joint.LINE_GCCA_ALL_DIR)
@@ -186,9 +186,9 @@ class Joint():
             else:
                 self.gcca.load_params(Joint.RAW_GCCA_ALL_DIR)
             self.gcca.transform(
-                self.english_feature.word_mat,
-                self.image_feature.img_feature,
-                self.japanese_feature.word_mat
+                self.english_feature.feature,
+                self.image_feature.feature,
+                self.japanese_feature.feature
             )
         else:
             if line_flag:

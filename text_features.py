@@ -3,13 +3,13 @@
 
 __author__ = 'rupy'
 
-import gensim
 from sklearn.feature_extraction.text import CountVectorizer
 import os
 import numpy as np
 import logging
 import sys
 import my_util as util
+from base_feature import BaseFeature
 
 def int_sort(a,b):
     head_a, tail_a = os.path.splitext(a)
@@ -17,22 +17,15 @@ def int_sort(a,b):
 
     return cmp(int(head_a),int(head_b))
 
-class TextFeatures():
+class TextFeatures(BaseFeature):
 
     def __init__(self, data_dir, original_dir= None, min_df=1):
 
-        # log setting
-        program = os.path.basename(sys.argv[0])
-        self.logger = logging.getLogger(program)
-        logging.basicConfig(format='%(asctime)s : %(levelname)s : %(message)s')
 
-        self.data_dir = data_dir
-        if original_dir is None:
-            self.original_dir = data_dir
-        else:
-            self.original_dir = original_dir
+        BaseFeature.__init__(data_dir, original_dir)
+
         self.vectorizer = CountVectorizer(min_df=min_df)
-        self.word_mat = None
+
         self.terms = None
         self.data_num_label = None
         self.line_count = None
@@ -43,9 +36,9 @@ class TextFeatures():
         dirs_sorted = sorted(dirs, int_sort)
         corpus = [ open(self.data_dir + file_name, 'r').read() for file_name in dirs_sorted]
         x = self.vectorizer.fit_transform(corpus)
-        self.word_mat = x.toarray()
+        self.feature = x.toarray()
         self.terms = np.array(self.vectorizer.get_feature_names())
-        print self.word_mat.shape
+        print self.feature.shape
 
     def create_bow_feature_with_lines(self):
 
@@ -57,20 +50,9 @@ class TextFeatures():
         self.data_num_label = reduce(lambda x,y:x+y,line_count)
         self.line_count = [ len(line) for line in corpus]
         x = self.vectorizer.fit_transform(corpus_flatten)
-        self.word_mat = x.toarray()
+        self.feature = x.toarray()
         self.terms = np.array(self.vectorizer.get_feature_names())
-        print self.word_mat.shape
-
-    def get_train_data(self, step=2):
-        self.logger.info(self.word_mat[::step].shape)
-        # select every step-th row
-        return self.word_mat[::step]
-
-    def get_test_data(self, step=2):
-        self.logger.info(util.skip_rows_by_step(self.word_mat, step).shape)
-
-        # select data except for every step-th data
-        return util.skip_rows_by_step(self.word_mat, step)
+        print self.feature.shape
 
     def read_text_by_id(self, text_id):
         text = None
