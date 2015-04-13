@@ -207,7 +207,13 @@ class GCCA:
 
         plt.show()
 
-
+    def corrcoef(self):
+        print "1:2"
+        print np.corrcoef(self.z_1[:,0], self.z_2[:,0])
+        print "2:3"
+        print np.corrcoef(self.z_2[:,0], self.z_3[:,0])
+        print "1:3"
+        print np.corrcoef(self.z_1[:,0], self.z_3[:,0])
 
 if __name__=="__main__":
     pass

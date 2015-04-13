@@ -250,7 +250,7 @@ class CCA(object):
         return mat
 
     def corrcoef(self):
-        return np.corrcoef(self.x_c[:,0], self.y_c[:,0])
+        print np.corrcoef(self.x_c[:,0], self.y_s[:,0])
 
     def fix_reverse(self):
         cor = [np.corrcoef(self.x_c[:, i], self.y_c[:, i])[0, 1] for i in xrange(self.x_c.shape[1])]

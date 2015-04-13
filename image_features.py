@@ -39,11 +39,13 @@ class ImageFeatures():
         print self.img_feature.shape
 
     def get_train_data(self, step=2):
+        self.logger.info(self.img_feature[::step].shape)
 
         # select every step-th row
         return self.img_feature[::step]
 
     def get_test_data(self, step=2):
+        self.logger.info(util.skip_rows_by_step(self.img_feature, step).shape)
 
         # select data except for every step-th data
         return util.skip_rows_by_step(self.img_feature, step)

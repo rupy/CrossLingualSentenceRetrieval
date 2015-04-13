@@ -11,6 +11,8 @@ import logging
 from sklearn.neighbors import NearestNeighbors
 import os
 import sys
+import matplotlib.pyplot as plt
+import numpy as np
 
 class Joint():
 
@@ -64,8 +66,10 @@ class Joint():
         if not os.path.isdir(Joint.RAW_CCA_TRAIN_DIR):
             os.mkdir(Joint.RAW_CCA_TRAIN_DIR)
 
-    def cca_fit(self, mode='ALL', line_flag=False, step=2):
-        self.logger.info("fitting CCA mode:%s line_flag:%s step:%d", mode, line_flag, step)
+    def cca_fit(self, mode='ALL', line_flag=False, step=2, reg_param=0.1):
+        self.logger.info("fitting CCA mode:%s line_flag:%s step:%d reg_param:%f", mode, line_flag, step, reg_param)
+
+        self.cca.reg_param = reg_param
 
         if line_flag:
             self.english_feature.create_bow_feature_with_lines()
@@ -88,15 +92,15 @@ class Joint():
                 self.japanese_feature.get_train_data(step)
             )
             if line_flag:
-                if not os.path.isdir(Joint.LINE_CCA_TRAIN_DIR + str(step) + '/'):
-                    os.mkdir(Joint.LINE_CCA_TRAIN_DIR + str(step) + '/')
-                self.cca.save_params(Joint.LINE_CCA_TRAIN_DIR + str(step) + '/')
+                if not os.path.isdir(Joint.LINE_CCA_TRAIN_DIR + str(reg_param).replace(".", "_") + '/' + str(step) + '/'):
+                    os.makedirs(Joint.LINE_CCA_TRAIN_DIR + str(reg_param).replace(".", "_") + '/' + str(step) + '/')
+                self.cca.save_params(Joint.LINE_CCA_TRAIN_DIR + str(reg_param).replace(".", "_") + '/' + str(step) + '/')
             else:
-                if not os.path.isdir(Joint.RAW_CCA_TRAIN_DIR + str(step) + '/'):
-                    os.mkdir(Joint.RAW_CCA_TRAIN_DIR + str(step) + '/')
-                self.cca.save_params(Joint.RAW_CCA_TRAIN_DIR + str(step) + '/')
+                if not os.path.isdir(Joint.RAW_CCA_TRAIN_DIR + str(reg_param).replace(".", "_") + '/' + str(step) + '/'):
+                    os.makedirs(Joint.RAW_CCA_TRAIN_DIR + str(reg_param).replace(".", "_") + '/' + str(step) + '/')
+                self.cca.save_params(Joint.RAW_CCA_TRAIN_DIR + str(reg_param).replace(".", "_") + '/' + str(step) + '/')
 
-    def cca_transform(self, mode='ALL', line_flag=False, step=2):
+    def cca_transform(self, mode='ALL', line_flag=False, step=2, reg_param=0.1):
         if line_flag:
             self.english_feature.create_bow_feature_with_lines()
             self.japanese_feature.create_bow_feature_with_lines()
@@ -114,9 +118,9 @@ class Joint():
             )
         else:
             if line_flag:
-                self.cca.load_params(Joint.LINE_CCA_TRAIN_DIR + str(step) + '/')
+                self.cca.load_params(Joint.LINE_CCA_TRAIN_DIR + str(reg_param).replace(".", "_") + '/' + str(step) + '/')
             else:
-                self.cca.load_params(Joint.RAW_CCA_TRAIN_DIR + str(step) + '/')
+                self.cca.load_params(Joint.RAW_CCA_TRAIN_DIR + str(reg_param).replace(".", "_") + '/' + str(step) + '/')
             self.cca.transform(
                 self.english_feature.get_test_data(),
                 self.japanese_feature.get_test_data()
@@ -126,8 +130,9 @@ class Joint():
     def cca_plot(self):
         self.cca.plot_cca_result(False)
 
-    def gcca_fit(self, mode='ALL', line_flag=False, step=2):
-        self.logger.info("fitting GCCA mode:%s line_flag:%s step:%d", mode, line_flag, step)
+    def gcca_fit(self, mode='ALL', line_flag=False, step=2, reg_param=0.1):
+        self.logger.info("fitting GCCA mode:%s line_flag:%s step:%d reg_param:%f", mode, line_flag, step, reg_param)
+        self.gcca.reg_param = reg_param
         if line_flag:
             self.english_feature.create_bow_feature_with_lines()
             self.japanese_feature.create_bow_feature_with_lines()
@@ -148,21 +153,23 @@ class Joint():
             else:
                 self.gcca.save_params(Joint.RAW_GCCA_ALL_DIR)
         else:
+            if line_flag:
+                if not os.path.isdir(Joint.LINE_GCCA_TRAIN_DIR + str(reg_param).replace(".", "_") + '/' + str(step) + '/'):
+                    os.makedirs(Joint.LINE_GCCA_TRAIN_DIR + str(reg_param).replace(".", "_") + '/' + str(step) + '/')
+            else:
+                if not os.path.isdir(Joint.RAW_GCCA_TRAIN_DIR + str(reg_param).replace(".", "_") + '/' + str(step) + '/'):
+                    os.makedirs(Joint.RAW_GCCA_TRAIN_DIR + str(reg_param).replace(".", "_") + '/' + str(step) + '/')
             self.gcca.fit(
-                self.english_feature.get_train_data(),
-                self.image_feature.get_train_data(),
-                self.japanese_feature.get_train_data()
+                self.english_feature.get_train_data(step),
+                self.image_feature.get_train_data(step),
+                self.japanese_feature.get_train_data(step)
             )
             if line_flag:
-                if not os.path.isdir(Joint.LINE_GCCA_TRAIN_DIR + str(step) + '/'):
-                    os.mkdir(Joint.LINE_GCCA_TRAIN_DIR + str(step) + '/')
-                self.gcca.save_params(Joint.LINE_GCCA_TRAIN_DIR + str(step) + '/')
+                self.gcca.save_params(Joint.LINE_GCCA_TRAIN_DIR + str(reg_param).replace(".", "_") + '/' + str(step) + '/')
             else:
-                if not os.path.isdir(Joint.RAW_GCCA_TRAIN_DIR + str(step) + '/'):
-                    os.mkdir(Joint.RAW_GCCA_TRAIN_DIR + str(step) + '/')
-                self.gcca.save_params(Joint.RAW_GCCA_TRAIN_DIR + str(step) + '/')
+                self.gcca.save_params(Joint.RAW_GCCA_TRAIN_DIR + str(reg_param).replace(".", "_") + '/' + str(step) + '/')
 
-    def gcca_transform(self, mode='ALL', line_flag=False, step=2):
+    def gcca_transform(self, mode='ALL', line_flag=False, step=2, reg_param=0.1):
 
         if line_flag:
             self.english_feature.create_bow_feature_with_lines()
@@ -185,9 +192,9 @@ class Joint():
             )
         else:
             if line_flag:
-                self.gcca.load_params(Joint.LINE_GCCA_TRAIN_DIR + str(step) + '/')
+                self.gcca.load_params(Joint.LINE_GCCA_TRAIN_DIR + str(reg_param).replace(".", "_") + '/' + str(step) + '/')
             else:
-                self.gcca.load_params(Joint.RAW_GCCA_TRAIN_DIR + str(step) + '/')
+                self.gcca.load_params(Joint.RAW_GCCA_TRAIN_DIR + str(reg_param).replace(".", "_") + '/' + str(step) + '/')
             self.gcca.transform(
                 self.english_feature.get_test_data(),
                 self.image_feature.get_test_data(),
@@ -295,6 +302,27 @@ class Joint():
                 pass
         return float(hit_count) / len(nn_indices) * 100
 
+    def compare_correlation_coefficient(self):
+        self.cca.corrcoef()
+        self.gcca.corrcoef()
+
+    def plot_results(self, res_cca, res_gcca, step_list, col_num=2):
+
+        data_num = len(res_cca)
+        row_num = data_num / col_num
+        if row_num - float(data_num)/col_num != 0:
+            print row_num
+            row_num = row_num + 1
+
+        fig = plt.figure()
+        for i, (step, row_cca, row_gcca) in enumerate(zip(step_list, res_cca, res_gcca)):
+
+            plt.subplot(row_num , col_num, i + 1)
+            plt.plot(np.arange(len(row_cca)) * 10 + 10, row_cca, '-r')
+            plt.plot(np.arange(len(row_gcca)) * 10 + 10, row_gcca, '-b')
+            plt.title('Accuracy(step:%d)' % step)
+        plt.tight_layout()
+        plt.show()
 
 
 if __name__=="__main__":

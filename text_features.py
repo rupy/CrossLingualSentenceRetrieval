@@ -62,10 +62,12 @@ class TextFeatures():
         print self.word_mat.shape
 
     def get_train_data(self, step=2):
+        self.logger.info(self.word_mat[::step].shape)
         # select every step-th row
         return self.word_mat[::step]
 
     def get_test_data(self, step=2):
+        self.logger.info(util.skip_rows_by_step(self.word_mat, step).shape)
 
         # select data except for every step-th data
         return util.skip_rows_by_step(self.word_mat, step)
