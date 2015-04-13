@@ -14,7 +14,7 @@ class ImageFeatures(BaseFeature):
 
     def __init__(self, data_dir, original_dir=None, correspondence_path=None):
 
-        BaseFeature.__init__(data_dir, original_dir, correspondence_path)
+        BaseFeature.__init__(self, data_dir, original_dir)
 
         self.correspondence_path = correspondence_path
 

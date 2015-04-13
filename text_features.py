@@ -19,7 +19,7 @@ class TextFeatures(BaseFeature):
     def __init__(self, data_dir, original_dir= None, min_df=1):
 
 
-        BaseFeature.__init__(data_dir, original_dir)
+        BaseFeature.__init__(self, data_dir, original_dir)
 
         self.vectorizer = CountVectorizer(min_df=min_df)
 
