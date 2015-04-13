@@ -8,6 +8,7 @@ import sys
 import os
 import numpy as np
 import my_util as util
+from sklearn.decomposition import PCA
 
 class BaseFeature():
 
@@ -25,6 +26,8 @@ class BaseFeature():
             self.original_dir = original_dir
 
         self.feature = None
+        self.pca = PCA(n_components=100)
+        self.feature_pca = None
 
     def load_feature(self):
         self.feature = np.load(self.data_dir)
@@ -41,3 +44,7 @@ class BaseFeature():
 
         # select data except for every step-th data
         return util.skip_rows_by_step(self.feature, step)
+
+    def pca_feature(self, n_components=100):
+        self.pca.n_components = n_components
+        self.feature_pca = self.pca.fit(self.feature).transform(self.feature)

@@ -5,7 +5,6 @@ __author__ = 'rupy'
 
 import numpy as np
 from scipy.linalg import eig
-import time
 import logging
 import os
 import sys

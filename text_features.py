@@ -6,9 +6,6 @@ __author__ = 'rupy'
 from sklearn.feature_extraction.text import CountVectorizer
 import os
 import numpy as np
-import logging
-import sys
-import my_util as util
 from base_feature import BaseFeature
 
 def int_sort(a,b):
