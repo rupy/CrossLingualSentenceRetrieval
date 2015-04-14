@@ -31,10 +31,10 @@ class Experiment:
         self.joint.process_and_save_features(True)
         self.joint.process_and_save_features(False)
 
-    def fit_changing_step(self, line_flag=False, start_step=1, end_step=25, every_nth=1):
+    def fit_changing_step(self, step_list, line_flag=False):
         self.joint.load_preprocessed_features(line_flag)
 
-        for s in range(start_step, end_step, every_nth):
+        for s in step_list:
             self.joint.gcca_fit(line_flag=line_flag, step=s)
             self.joint.cca_fit(line_flag=line_flag, step=s)
 
@@ -51,11 +51,10 @@ class Experiment:
 
         return res_cca_list, res_gcca_list
 
-    def calc_accuracy_changing_step(self, line_flag=False, reg_param=0.1, start_step=1, end_step=25, every_nth=1):
+    def calc_accuracy_changing_step(self, step_list, line_flag=False, reg_param=0.1):
 
         res_cca_data = []
         res_gcca_data = []
-        step_list = np.arange(start_step, end_step, every_nth)
 
         self.joint.load_preprocessed_features(line_flag)
         for step in step_list:
@@ -74,7 +73,7 @@ class Experiment:
         # joint.gcca_transform(mode='PART', line_flag=True, step=5)
         # res_cca_arr = np.load('output/results/res_cca_arr.npy')
         # res_gcca_arr = np.load('output/results/res_gcca_arr.npy')
-        self.joint.plot_results(res_cca_arr, res_gcca_arr, step_list, col_num=2)
+        self.joint.plot_results(res_cca_arr, res_gcca_arr, step_list, col_num=4)
 
     def fit_chenging_regparam(self, reg_params, step=5, line_flag=False):
         self.joint.load_preprocessed_features(line_flag)
@@ -104,4 +103,4 @@ class Experiment:
         # joint.gcca_transform(line_flag=True, step=5)
         # res_cca_arr = np.load('output/results/res_cca_reg_arr.npy')
         # res_gcca_arr = np.load('output/results/res_gcca_reg_arr.npy')
-        self.joint.plot_results(res_cca_arr, res_gcca_arr, reg_list, col_num=2)
+        self.joint.plot_results(res_cca_arr, res_gcca_arr, reg_list, col_num=4)

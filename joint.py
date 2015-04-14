@@ -145,7 +145,7 @@ class Joint():
     def gcca_plot(self):
         self.gcca.plot_gcca_result()
 
-    def gcca_nn_j2e(self, j_id, neighbor_num = 10):
+    def retrieval_j2e_by_gcca(self, j_id, neighbor_num = 10):
 
         min_dim = 30
 
@@ -160,7 +160,7 @@ class Joint():
             print "=%d=================" % (idx + 1)
             print self.english_feature.read_text_by_id(idx + 1)
 
-    def cca_nn_j2e(self, j_id, neighbor_num = 10):
+    def retrieval_j2e_by_cca(self, j_id, neighbor_num = 10):
 
         min_dim = 30
 
@@ -175,7 +175,7 @@ class Joint():
             print "=%d=================" % (idx + 1)
             print self.english_feature.read_text_by_id(idx + 1)
 
-    def gcca_nn_j2i(self, j_id, neighbor_num=10):
+    def retrieval_j2i_by_gcca(self, j_id, neighbor_num=10):
 
         min_dim = 30
 
@@ -229,7 +229,7 @@ class Joint():
         self.cca.corrcoef()
         self.gcca.corrcoef()
 
-    def plot_results(self, res_cca, res_gcca, step_list, col_num=2):
+    def plot_results(self, res_cca, res_gcca, title_list, col_num=2, mode='STEP'):
 
         data_num = len(res_cca)
         row_num = data_num / col_num
@@ -238,12 +238,15 @@ class Joint():
             row_num = row_num + 1
 
         fig = plt.figure()
-        for i, (step, row_cca, row_gcca) in enumerate(zip(step_list, res_cca, res_gcca)):
+        for i, (title, row_cca, row_gcca) in enumerate(zip(title_list, res_cca, res_gcca)):
 
             plt.subplot(row_num , col_num, i + 1)
             plt.plot(np.arange(len(row_cca)) * 10 + 10, row_cca, '-r')
             plt.plot(np.arange(len(row_gcca)) * 10 + 10, row_gcca, '-b')
-            plt.title('Accuracy(step:%d)' % step)
+            if mode == 'STEP':
+                plt.title('Accuracy(step:%d)' % title)
+            elif mode == 'REG':
+                plt.title('Accuracy(reg:%f)' % title)
         plt.tight_layout()
         plt.show()
 

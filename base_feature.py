@@ -43,10 +43,16 @@ class BaseFeature():
         return self.feature[::step]
 
     def get_test_data(self, step=2):
-        self.logger.info(util.skip_rows_by_step(self.feature, step).shape)
+        if step != 1:
+            self.logger.info(util.skip_rows_by_step(self.feature, step).shape)
 
-        # select data except for every step-th data
-        return util.skip_rows_by_step(self.feature, step)
+            # select data except for every step-th data
+            return util.skip_rows_by_step(self.feature, step)
+        else:
+            self.logger.info(self.feature.shape)
+
+            # return all data
+            return self.feature
 
     def pca_feature(self):
         self.logger.info("compressing feature")
