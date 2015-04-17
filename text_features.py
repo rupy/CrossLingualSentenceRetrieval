@@ -37,8 +37,6 @@ class TextFeatures(BaseFeature):
         x = self.vectorizer.fit_transform(corpus)
         self.feature = x.toarray()
         self.terms = np.array(self.vectorizer.get_feature_names())
-        if self.compress_dim is not None:
-            self.feature = self.pca_feature()
         print self.feature.shape
 
     def create_bow_feature_with_lines(self):
@@ -53,8 +51,6 @@ class TextFeatures(BaseFeature):
         x = self.vectorizer.fit_transform(corpus_flatten)
         self.feature = x.toarray()
         self.terms = np.array(self.vectorizer.get_feature_names())
-        if self.compress_dim is not None:
-            self.feature = self.pca_feature()
         print self.feature.shape
 
     def read_text_by_id(self, text_id):

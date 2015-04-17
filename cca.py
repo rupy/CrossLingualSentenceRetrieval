@@ -17,7 +17,7 @@ class CCA(object):
         # log setting
         program = os.path.basename(sys.argv[0])
         self.logger = logging.getLogger(program)
-        logging.basicConfig(format='%(asctime)s : %(levelname)s : %(message)s')
+        logging.basicConfig(format='%(asctime)s : %(filename)s : %(levelname)s : %(message)s')
 
         # CCA params
         self.n_components = n_components
@@ -64,7 +64,7 @@ class CCA(object):
         # print invvar
         eig_vecs = np.dot(eig_vecs, invvar)
 
-        print np.dot(eig_vecs.T, np.dot(right, eig_vecs)).round().astype(int)
+        # print np.dot(eig_vecs.T, np.dot(right, eig_vecs)).round().astype(int)
 
         return eig_vals, eig_vecs
 
@@ -73,6 +73,8 @@ class CCA(object):
 
         self.x = x
         self.y = y
+
+        self.logger.info("data shape x:%s, y:%s", x.shape, y.shape)
 
         self.logger.info("calculating average, variance, and covariance")
         z = np.vstack((x.T, y.T))
@@ -156,7 +158,7 @@ class CCA(object):
         return self.ptransform(x, y, beta)
 
     def save_params(self, filepath):
-        self.logger.info("saving cca")
+        self.logger.info("saving cca to %s", filepath)
         np.save(filepath + "n_components.npy" , self.n_components)
         np.save(filepath + "reg_param.npy", self.reg_param)
         np.save(filepath + "x_weights.npy", self.x_weights)
@@ -167,7 +169,7 @@ class CCA(object):
         np.save(filepath + "cxy.npy", self.c_xy)
 
     def load_params(self, filepath):
-        self.logger.info("loading cca")
+        self.logger.info("loading cca from %s", filepath)
         self.n_components = np.load(filepath + "n_components.npy")
         self.reg_param = np.load(filepath + "reg_param.npy")
         self.x_weights = np.load(filepath + "x_weights.npy")

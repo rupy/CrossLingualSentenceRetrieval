@@ -27,12 +27,9 @@ class Experiment:
             Experiment.PCA_COMPRESS_DIM
         )
 
-    def process_features(self):
-        self.joint.process_and_save_features(True)
-        self.joint.process_and_save_features(False)
 
     def fit_changing_step(self, step_list, line_flag=False):
-        self.joint.load_preprocessed_features(line_flag)
+        self.joint.process_features(line_flag)
 
         for s in step_list:
             self.joint.gcca_fit(line_flag=line_flag, step=s)
@@ -51,12 +48,19 @@ class Experiment:
 
         return res_cca_list, res_gcca_list
 
+    def plot_result(self, line_flag=True, step=1000, reg_param=0.1):
+        self.joint.process_features(line_flag)
+        self.joint.gcca_transform(line_flag=line_flag, step=step, reg_param=reg_param)
+        self.joint.cca_transform(line_flag=line_flag, step=step, reg_param=reg_param)
+        self.joint.cca_plot()
+        self.joint.gcca_plot()
+
     def calc_accuracy_changing_step(self, step_list, line_flag=False, reg_param=0.1):
 
         res_cca_data = []
         res_gcca_data = []
 
-        self.joint.load_preprocessed_features(line_flag)
+        self.joint.process_features(line_flag)
         for step in step_list:
             self.joint.gcca_transform(line_flag=line_flag, step=step, reg_param=reg_param)
             self.joint.cca_transform(line_flag=line_flag, step=step, reg_param=reg_param)
@@ -76,7 +80,7 @@ class Experiment:
         self.joint.plot_results(res_cca_arr, res_gcca_arr, step_list, col_num=4)
 
     def fit_chenging_regparam(self, reg_params, step=5, line_flag=False):
-        self.joint.load_preprocessed_features(line_flag)
+        self.joint.process_features(line_flag)
         for r in reg_params:
             self.joint.gcca_fit(line_flag=line_flag, step=step, reg_param=r)
             self.joint.cca_fit(line_flag=line_flag, step=step, reg_param=r)
@@ -86,7 +90,7 @@ class Experiment:
         res_cca_data = []
         res_gcca_data = []
 
-        self.joint.load_preprocessed_features(line_flag)
+        self.joint.process_features(line_flag)
         for reg in reg_list:
             self.joint.gcca_transform(line_flag=line_flag, step=step, reg_param=reg)
             self.joint.cca_transform(line_flag=line_flag, step=step, reg_param=reg)
@@ -104,3 +108,7 @@ class Experiment:
         # res_cca_arr = np.load('output/results/res_cca_reg_arr.npy')
         # res_gcca_arr = np.load('output/results/res_gcca_reg_arr.npy')
         self.joint.plot_results(res_cca_arr, res_gcca_arr, reg_list, col_num=4)
+
+    def plot_original_data(self, line_flag):
+        self.joint.process_features(line_flag)
+        self.joint.plot_original_data()

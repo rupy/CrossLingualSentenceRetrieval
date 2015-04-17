@@ -23,8 +23,6 @@ class ImageFeatures(BaseFeature):
 
     def load_original_feature(self):
         self.feature = np.load(self.data_dir)
-        if self.compress_dim is not None:
-            self.feature = self.pca_feature()
         print self.feature.shape
 
 
@@ -32,8 +30,6 @@ class ImageFeatures(BaseFeature):
         img_feature = np.load(self.data_dir)
         # copy rows
         self.feature = img_feature.repeat(line_count, axis=0)
-        if self.compress_dim is not None:
-            self.feature = self.pca_feature()
         print self.feature.shape
 
     def plot_img_by_id(self, img_id):

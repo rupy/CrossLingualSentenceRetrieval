@@ -13,6 +13,7 @@ import os
 import sys
 import matplotlib.pyplot as plt
 import numpy as np
+from sklearn.decomposition import PCA
 
 class Joint():
 
@@ -32,7 +33,7 @@ class Joint():
         # log setting
         program = os.path.basename(sys.argv[0])
         self.logger = logging.getLogger(program)
-        logging.basicConfig(format='%(asctime)s : %(levelname)s : %(message)s')
+        logging.basicConfig(format='%(asctime)s : %(filename)s : %(levelname)s : %(message)s')
 
         self.english_feature = txt.TextFeatures(en_dir, compress_dim=compress_dim)
         self.japanese_feature = txt.TextFeatures(jp_dir, jp_original_dir, compress_dim=compress_dim)
@@ -58,7 +59,7 @@ class Joint():
         if not os.path.isdir(Joint.FEATURE_DIR):
             os.mkdir(Joint.FEATURE_DIR)
 
-    def process_and_save_features(self, line_flag=False):
+    def process_features(self, line_flag=False):
         self.logger.info("processing features")
         if line_flag:
             self.english_feature.create_bow_feature_with_lines()
@@ -68,16 +69,6 @@ class Joint():
             self.english_feature.create_bow_feature()
             self.japanese_feature.create_bow_feature()
             self.image_feature.load_original_feature()
-        self.logger.info("saving features")
-        self.english_feature.save_processed_feature(Joint.FEATURE_DIR, line_flag)
-        self.japanese_feature.save_processed_feature(Joint.FEATURE_DIR, line_flag)
-        self.image_feature.save_processed_feature(Joint.FEATURE_DIR, line_flag)
-
-    def load_preprocessed_features(self, line_flag=False):
-        self.logger.info("loading features")
-        self.english_feature.load_processed_feature(Joint.FEATURE_DIR, line_flag)
-        self.japanese_feature.load_processed_feature(Joint.FEATURE_DIR, line_flag)
-        self.image_feature.load_processed_feature(Joint.FEATURE_DIR, line_flag)
 
     def cca_fit(self, line_flag=False, step=2, reg_param=0.1):
         self.logger.info("fitting CCA line_flag:%s step:%d reg_param:%f", line_flag, step, reg_param)
@@ -98,13 +89,14 @@ class Joint():
             self.cca.save_params(Joint.RAW_CCA_DIR + str(reg_param).replace(".", "_") + '/' + str(step) + '/')
 
     def cca_transform(self, line_flag=False, step=2, reg_param=0.1):
+        self.logger.info("transforming by CCA line_flag:%s step:%d reg_param:%f", line_flag, step, reg_param)
         if line_flag:
             self.cca.load_params(Joint.LINE_CCA_DIR + str(reg_param).replace(".", "_") + '/' + str(step) + '/')
         else:
             self.cca.load_params(Joint.RAW_CCA_DIR + str(reg_param).replace(".", "_") + '/' + str(step) + '/')
         self.cca.transform(
-            self.english_feature.get_test_data(),
-            self.japanese_feature.get_test_data()
+            self.english_feature.get_test_data(step),
+            self.japanese_feature.get_test_data(step)
         )
         self.cca.fix_reverse()
 
@@ -130,6 +122,7 @@ class Joint():
             self.gcca.save_params(Joint.RAW_GCCA_DIR + str(reg_param).replace(".", "_") + '/' + str(step) + '/')
 
     def gcca_transform(self, line_flag=False, step=2, reg_param=0.1):
+        self.logger.info("transforming by GCCA line_flag:%s step:%d reg_param:%f", line_flag, step, reg_param)
 
         if line_flag:
             self.gcca.load_params(Joint.LINE_GCCA_DIR + str(reg_param).replace(".", "_") + '/' + str(step) + '/')
@@ -137,9 +130,9 @@ class Joint():
             self.gcca.load_params(Joint.RAW_GCCA_DIR + str(reg_param).replace(".", "_") + '/' + str(step) + '/')
 
         self.gcca.transform(
-            self.english_feature.get_test_data(),
-            self.image_feature.get_test_data(),
-            self.japanese_feature.get_test_data()
+            self.english_feature.get_test_data(step),
+            self.image_feature.get_test_data(step),
+            self.japanese_feature.get_test_data(step)
         )
 
     def gcca_plot(self):
@@ -248,6 +241,35 @@ class Joint():
             elif mode == 'REG':
                 plt.title('Accuracy(reg:%f)' % title)
         plt.tight_layout()
+        plt.show()
+
+    def plot_original_data(self):
+        """
+        plot original two data.
+        :return: None
+        """
+
+        pca = PCA(n_components=2)
+        x = pca.fit_transform(self.english_feature.feature)
+        y = pca.fit_transform(self.image_feature.feature)
+        z = pca.fit_transform(self.japanese_feature.feature)
+
+        print x[x!=0]
+        print y
+        print z[z!=0]
+
+        # plot
+        plt.subplot(311)
+        plt.plot(x[:, 0], x[:, 1], '.r')
+        plt.title('X')
+
+        plt.subplot(312)
+        plt.plot(y[:, 0], y[:, 1], '.g')
+        plt.title('Y')
+
+        plt.subplot(313)
+        plt.plot(z[:, 0], z[:, 1], '.b')
+        plt.title('Z')
         plt.show()
 
 

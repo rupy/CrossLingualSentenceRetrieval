@@ -17,7 +17,7 @@ class GCCA:
         # log setting
         program = os.path.basename(sys.argv[0])
         self.logger = logging.getLogger(program)
-        logging.basicConfig(format='%(asctime)s : %(levelname)s : %(message)s')
+        logging.basicConfig(format='%(asctime)s : %(filename)s : %(levelname)s : %(message)s')
 
         # GCCA params
         self.n_components = n_components
@@ -62,7 +62,7 @@ class GCCA:
         # print invvar
         eig_vecs = np.dot(eig_vecs, invvar)
 
-        print np.dot(eig_vecs.T, np.dot(right, eig_vecs)).round().astype(int)
+        # print np.dot(eig_vecs.T, np.dot(right, eig_vecs)).round().astype(int)
 
         return eig_vals, eig_vecs
 
@@ -73,13 +73,15 @@ class GCCA:
         self.x_2 = x_2
         self.x_3 = x_3
 
+        self.logger.info("data shape x1:%s, x2:%s, x3:%s", x_1.shape, x_2.shape, x_3.shape)
+
         self.logger.info("calculating average, variance, and covariance")
         z = np.vstack((x_1.T, x_2.T, x_3.T))
-        print z.shape
+        # print z.shape
         cov = np.cov(z)
         d1 = len(x_1.T)
         d2 = len(x_2.T) + d1
-        print d1, d2
+        # print d1, d2
         c11 = cov[:d1, :d1]
         c22 = cov[d1:d2, d1:d2]
         c33 = cov[d2:, d2:]
@@ -148,7 +150,7 @@ class GCCA:
         self.transform(x_1, x_2, x_3)
 
     def save_params(self, filepath):
-        self.logger.info("saving gcca")
+        self.logger.info("saving gcca to %s", filepath)
         np.save(filepath + "n_components.npy" , self.n_components)
         np.save(filepath + "reg_param.npy", self.reg_param)
         np.save(filepath + "h_1.npy", self.h_1)
@@ -163,7 +165,7 @@ class GCCA:
         np.save(filepath + "c13.npy", self.c13)
 
     def load_params(self, filepath):
-        self.logger.info("loading gcca")
+        self.logger.info("loading gcca from %s", filepath)
         self.n_components = np.load(filepath + "n_components.npy")
         self.reg_param = np.load(filepath + "reg_param.npy")
         self.h_1 = np.load(filepath + "h_1.npy")
