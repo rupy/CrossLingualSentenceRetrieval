@@ -59,6 +59,16 @@ class Joint():
         if not os.path.isdir(Joint.FEATURE_DIR):
             os.mkdir(Joint.FEATURE_DIR)
 
+    def save_pca_features(self, line_flag):
+        self.english_feature.save_pca_data(Joint.FEATURE_DIR, 'eng_' + 'line' if line_flag else 'raw')
+        self.image_feature.save_pca_data(Joint.FEATURE_DIR, 'img_' + 'line' if line_flag else 'raw')
+        self.japanese_feature.save_pca_data(Joint.FEATURE_DIR, 'jpn_' + 'line' if line_flag else 'raw')
+
+    def load_pca_features(self, line_flag):
+        self.english_feature.load_pca_data(Joint.FEATURE_DIR, 'eng_' + 'line' if line_flag else 'raw')
+        self.image_feature.load_pca_data(Joint.FEATURE_DIR, 'img_' + 'line' if line_flag else 'raw')
+        self.japanese_feature.load_pca_data(Joint.FEATURE_DIR, 'jpn_' + 'line' if line_flag else 'raw')
+
     def process_features(self, line_flag=False):
         self.logger.info("processing features")
         if line_flag:
@@ -70,69 +80,69 @@ class Joint():
             self.japanese_feature.create_bow_feature()
             self.image_feature.load_original_feature()
 
-    def cca_fit(self, line_flag=False, step=2, reg_param=0.1):
-        self.logger.info("fitting CCA line_flag:%s step:%d reg_param:%f", line_flag, step, reg_param)
+    def cca_fit(self, sample_num, line_flag=False, reg_param=0.1):
+        self.logger.info("fitting CCA line_flag:%s sample_num:%d reg_param:%f", line_flag, sample_num, reg_param)
 
         self.cca.reg_param = reg_param
 
         self.cca.fit(
-            self.english_feature.get_train_data(step),
-            self.japanese_feature.get_train_data(step)
+            self.english_feature.sample_random_train_data(sample_num),
+            self.japanese_feature.sample_random_train_data(sample_num)
         )
         if line_flag:
-            if not os.path.isdir(Joint.LINE_CCA_DIR + str(reg_param).replace(".", "_") + '/' + str(step) + '/'):
-                os.makedirs(Joint.LINE_CCA_DIR + str(reg_param).replace(".", "_") + '/' + str(step) + '/')
-            self.cca.save_params(Joint.LINE_CCA_DIR + str(reg_param).replace(".", "_") + '/' + str(step) + '/')
+            if not os.path.isdir(Joint.LINE_CCA_DIR + str(reg_param).replace(".", "_") + '/' + str(sample_num) + '/'):
+                os.makedirs(Joint.LINE_CCA_DIR + str(reg_param).replace(".", "_") + '/' + str(sample_num) + '/')
+            self.cca.save_params(Joint.LINE_CCA_DIR + str(reg_param).replace(".", "_") + '/' + str(sample_num) + '/')
         else:
-            if not os.path.isdir(Joint.RAW_CCA_DIR + str(reg_param).replace(".", "_") + '/' + str(step) + '/'):
-                os.makedirs(Joint.RAW_CCA_DIR + str(reg_param).replace(".", "_") + '/' + str(step) + '/')
-            self.cca.save_params(Joint.RAW_CCA_DIR + str(reg_param).replace(".", "_") + '/' + str(step) + '/')
+            if not os.path.isdir(Joint.RAW_CCA_DIR + str(reg_param).replace(".", "_") + '/' + str(sample_num) + '/'):
+                os.makedirs(Joint.RAW_CCA_DIR + str(reg_param).replace(".", "_") + '/' + str(sample_num) + '/')
+            self.cca.save_params(Joint.RAW_CCA_DIR + str(reg_param).replace(".", "_") + '/' + str(sample_num) + '/')
 
-    def cca_transform(self, line_flag=False, step=2, reg_param=0.1):
-        self.logger.info("transforming by CCA line_flag:%s step:%d reg_param:%f", line_flag, step, reg_param)
+    def cca_transform(self, sample_num, line_flag=False, reg_param=0.1):
+        self.logger.info("transforming by CCA line_flag:%s sample_num:%d reg_param:%f", line_flag, sample_num, reg_param)
         if line_flag:
-            self.cca.load_params(Joint.LINE_CCA_DIR + str(reg_param).replace(".", "_") + '/' + str(step) + '/')
+            self.cca.load_params(Joint.LINE_CCA_DIR + str(reg_param).replace(".", "_") + '/' + str(sample_num) + '/')
         else:
-            self.cca.load_params(Joint.RAW_CCA_DIR + str(reg_param).replace(".", "_") + '/' + str(step) + '/')
+            self.cca.load_params(Joint.RAW_CCA_DIR + str(reg_param).replace(".", "_") + '/' + str(sample_num) + '/')
         self.cca.transform(
-            self.english_feature.get_test_data(step),
-            self.japanese_feature.get_test_data(step)
+            self.english_feature.test_feature_pca,
+            self.japanese_feature.test_feature_pca
         )
         self.cca.fix_reverse()
 
     def cca_plot(self):
         self.cca.plot_cca_result(False)
 
-    def gcca_fit(self, line_flag=False, step=2, reg_param=0.1):
-        self.logger.info("fitting GCCA line_flag:%s step:%d reg_param:%f", line_flag, step, reg_param)
+    def gcca_fit(self, sample_num, line_flag=False, reg_param=0.1):
+        self.logger.info("fitting GCCA line_flag:%s sample_num:%d reg_param:%f", line_flag, sample_num, reg_param)
         self.gcca.reg_param = reg_param
 
         self.gcca.fit(
-            self.english_feature.get_train_data(step),
-            self.image_feature.get_train_data(step),
-            self.japanese_feature.get_train_data(step)
+            self.english_feature.sample_random_train_data(sample_num),
+            self.image_feature.sample_random_train_data(sample_num),
+            self.japanese_feature.sample_random_train_data(sample_num)
         )
         if line_flag:
-            if not os.path.isdir(Joint.LINE_GCCA_DIR + str(reg_param).replace(".", "_") + '/' + str(step) + '/'):
-                os.makedirs(Joint.LINE_GCCA_DIR + str(reg_param).replace(".", "_") + '/' + str(step) + '/')
-            self.gcca.save_params(Joint.LINE_GCCA_DIR + str(reg_param).replace(".", "_") + '/' + str(step) + '/')
+            if not os.path.isdir(Joint.LINE_GCCA_DIR + str(reg_param).replace(".", "_") + '/' + str(sample_num) + '/'):
+                os.makedirs(Joint.LINE_GCCA_DIR + str(reg_param).replace(".", "_") + '/' + str(sample_num) + '/')
+            self.gcca.save_params(Joint.LINE_GCCA_DIR + str(reg_param).replace(".", "_") + '/' + str(sample_num) + '/')
         else:
-            if not os.path.isdir(Joint.RAW_GCCA_DIR + str(reg_param).replace(".", "_") + '/' + str(step) + '/'):
-                os.makedirs(Joint.RAW_GCCA_DIR + str(reg_param).replace(".", "_") + '/' + str(step) + '/')
-            self.gcca.save_params(Joint.RAW_GCCA_DIR + str(reg_param).replace(".", "_") + '/' + str(step) + '/')
+            if not os.path.isdir(Joint.RAW_GCCA_DIR + str(reg_param).replace(".", "_") + '/' + str(sample_num) + '/'):
+                os.makedirs(Joint.RAW_GCCA_DIR + str(reg_param).replace(".", "_") + '/' + str(sample_num) + '/')
+            self.gcca.save_params(Joint.RAW_GCCA_DIR + str(reg_param).replace(".", "_") + '/' + str(sample_num) + '/')
 
-    def gcca_transform(self, line_flag=False, step=2, reg_param=0.1):
-        self.logger.info("transforming by GCCA line_flag:%s step:%d reg_param:%f", line_flag, step, reg_param)
+    def gcca_transform(self, sample_num, line_flag=False, reg_param=0.1):
+        self.logger.info("transforming by GCCA line_flag:%s step:%d reg_param:%f", line_flag, sample_num, reg_param)
 
         if line_flag:
-            self.gcca.load_params(Joint.LINE_GCCA_DIR + str(reg_param).replace(".", "_") + '/' + str(step) + '/')
+            self.gcca.load_params(Joint.LINE_GCCA_DIR + str(reg_param).replace(".", "_") + '/' + str(sample_num) + '/')
         else:
-            self.gcca.load_params(Joint.RAW_GCCA_DIR + str(reg_param).replace(".", "_") + '/' + str(step) + '/')
+            self.gcca.load_params(Joint.RAW_GCCA_DIR + str(reg_param).replace(".", "_") + '/' + str(sample_num) + '/')
 
         self.gcca.transform(
-            self.english_feature.get_test_data(step),
-            self.image_feature.get_test_data(step),
-            self.japanese_feature.get_test_data(step)
+            self.english_feature.test_feature_pca,
+            self.image_feature.test_feature_pca,
+            self.japanese_feature.test_feature_pca
         )
 
     def gcca_plot(self):
@@ -222,7 +232,7 @@ class Joint():
         self.cca.corrcoef()
         self.gcca.corrcoef()
 
-    def plot_results(self, res_cca, res_gcca, title_list, col_num=2, mode='STEP'):
+    def plot_results(self, res_cca, res_gcca, title_list, col_num=2, mode=' SAMPLE'):
 
         data_num = len(res_cca)
         row_num = data_num / col_num
@@ -236,8 +246,8 @@ class Joint():
             plt.subplot(row_num , col_num, i + 1)
             plt.plot(np.arange(len(row_cca)) * 10 + 10, row_cca, '-r')
             plt.plot(np.arange(len(row_gcca)) * 10 + 10, row_gcca, '-b')
-            if mode == 'STEP':
-                plt.title('Accuracy(step:%d)' % title)
+            if mode == 'SAMPLE':
+                plt.title('Accuracy(sample:%d)' % title)
             elif mode == 'REG':
                 plt.title('Accuracy(reg:%f)' % title)
         plt.tight_layout()

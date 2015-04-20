@@ -10,11 +10,12 @@ if __name__=="__main__":
     logging.root.setLevel(level=logging.INFO)
 
     ex = experiment.Experiment()
+    # ex.save_pca_features(True)
+    # ex.save_pca_features(False)
+    ex.load_pca_features(False)
 
     # line
-    # ex.fit_changing_step(step_list=range(1, 25, 1), line_flag=True)
-    ex.fit_changing_step(step_list=range(50, 1001, 50), line_flag=True)
+    # ex.fit_changing_sample_num(sample_num_list=[100, 50, 10], line_flag=True)
 
     # raw
-    # ex.fit_changing_step(step_list=range(1, 25, 1), line_flag=False)
-    # ex.fit_changing_step(step_list=range(25, 201, 25), line_flag=False)
+    ex.fit_changing_sample_num(sample_num_list=[100, 50, 10], line_flag=False)

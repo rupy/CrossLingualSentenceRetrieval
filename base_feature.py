@@ -34,7 +34,8 @@ class BaseFeature():
             self.pca = PCA(n_components=compress_dim)
         else:
             self.pca = None
-        self.feature_pca = None
+        self.train_feature_pca = None
+        self.test_feature_pca = None
 
     def get_train_data(self, step=2):
         # select every step-th row
@@ -78,3 +79,33 @@ class BaseFeature():
         else:
             return self.pca.fit_transform(feature)
 
+    def save_pca_data(self, feature_dir, prefix):
+        train_data_pca = self.get_train_data(2)
+        test_data_pca = self.get_test_data(2)
+        self.logger.info("saving pca feature")
+        np.save(feature_dir + prefix + '_pca_train.npy', train_data_pca)
+        np.save(feature_dir + prefix + '_pca_test.npy', test_data_pca)
+
+    def load_pca_data(self, feature_dir, prefix):
+        self.logger.info("loading pca feature")
+        train_data_pca = np.load(feature_dir + prefix + '_pca_train.npy')
+        test_data_pca = np.load(feature_dir + prefix + '_pca_test.npy')
+        self.train_feature_pca = train_data_pca
+        self.test_feature_pca = test_data_pca
+        self.logger.info("train data shape:%s", self.train_feature_pca.shape)
+        self.logger.info("test data shape:%s", self.test_feature_pca.shape)
+
+
+    def sample_random_train_data(self, sample_num):
+        all_indices = range(self.train_feature_pca.shape[0])
+        sampled_indices = np.random.choice(all_indices, sample_num, False)
+        sampled_data = self.train_feature_pca[sampled_indices]
+        self.logger.info(" sampled train data shape:%s => %s", self.train_feature_pca.shape, sampled_data.shape)
+        return sampled_data
+
+    def sample_random_test_data(self, sample_num):
+        all_indices = range(self.test_feature_pca.shape[0])
+        sampled_indices = np.random.choice(all_indices, sample_num, False)
+        sampled_data = self.test_feature_pca[sampled_indices]
+        self.logger.info(" sampled test data shape:%s => %s", self. test_feature_pca.shape, sampled_data.shape)
+        return sampled_data
