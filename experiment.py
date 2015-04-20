@@ -9,7 +9,7 @@ class Experiment:
     PCA_COMPRESS_DIM = 100
     SEED_NUM = 2
 
-    def __init__(self):
+    def __init__(self, line_flag=False):
 
         english_corpus_dir = '../PascalSentenceDataset/english/'
         japanese_corpus_dir = '../PascalSentenceDataset/line_wakati/'
@@ -18,6 +18,7 @@ class Experiment:
         img_original_dir = '../PascalSentenceDataset/dataset/'
         img_correspondence_path = "../PascalSentenceDataset/correspondence.csv"
 
+
         self.joint = Joint(
             english_corpus_dir,
             img_features_npy,
@@ -25,24 +26,25 @@ class Experiment:
             img_original_dir,
             img_correspondence_path,
             japanese_original_corpus_dir,
-            Experiment.PCA_COMPRESS_DIM
+            Experiment.PCA_COMPRESS_DIM,
+            line_flag
         )
         np.random.seed(Experiment.SEED_NUM)
 
-    def process_features(self, line_flag):
-        self.joint.process_features(line_flag)
+    def process_features(self):
+        self.joint.process_features()
 
-    def save_pca_features(self, line_flag):
-        self.joint.process_features(line_flag)
-        self.joint.save_pca_features(line_flag)
+    def save_pca_features(self):
+        self.joint.process_features()
+        self.joint.save_pca_features()
 
-    def load_pca_features(self, line_flag):
-        self.joint.load_pca_features(line_flag)
+    def load_pca_features(self):
+        self.joint.load_pca_features()
 
-    def fit_changing_sample_num(self, sample_num_list, line_flag=False):
+    def fit_changing_sample_num(self, sample_num_list):
         for s in sample_num_list:
-            self.joint.gcca_fit(s, line_flag=line_flag)
-            self.joint.cca_fit(s, line_flag=line_flag)
+            self.joint.gcca_fit(s)
+            self.joint.cca_fit(s)
 
     def calc_accuracy(self, start_dim=1, end_dim=100, dim_step=1):
         res_cca_list = []
@@ -58,20 +60,20 @@ class Experiment:
 
         return res_cca_list, res_gcca_list
 
-    def plot_result(self, sample_num=500, line_flag=True, reg_param=0.1):
-        self.joint.gcca_transform(sample_num, line_flag=line_flag, reg_param=reg_param)
-        self.joint.cca_transform(sample_num, line_flag=line_flag, reg_param=reg_param)
+    def plot_result(self, sample_num=500, reg_param=0.1):
+        self.joint.gcca_transform(sample_num, reg_param=reg_param)
+        self.joint.cca_transform(sample_num, reg_param=reg_param)
         self.joint.cca_plot()
         self.joint.gcca_plot()
 
-    def calc_accuracy_changing_sample_num(self, sample_num_list, line_flag=False, reg_param=0.1):
+    def calc_accuracy_changing_sample_num(self, sample_num_list, reg_param=0.1):
 
         res_cca_data = []
         res_gcca_data = []
 
         for num in sample_num_list:
-            self.joint.gcca_transform(sample_num=num, line_flag=line_flag, reg_param=reg_param)
-            self.joint.cca_transform(sample_num=num, line_flag=line_flag, reg_param=reg_param)
+            self.joint.gcca_transform(sample_num=num, reg_param=reg_param)
+            self.joint.cca_transform(sample_num=num, reg_param=reg_param)
 
             res_cca_list, res_gcca_list = self.calc_accuracy(10, 310, 10)
             res_cca_data.append(res_cca_list)
@@ -87,19 +89,19 @@ class Experiment:
         # res_gcca_arr = np.load('output/results/res_gcca_arr.npy')
         self.joint.plot_results(res_cca_arr, res_gcca_arr, sample_num_list, col_num=4)
 
-    def fit_chenging_regparam(self, reg_params, sample_num=500, line_flag=False):
+    def fit_chenging_regparam(self, reg_params, sample_num=500):
         for r in reg_params:
-            self.joint.gcca_fit(sample_num=sample_num, line_flag=line_flag, reg_param=r)
-            self.joint.cca_fit(sample_num=sample_num, line_flag=line_flag, reg_param=r)
+            self.joint.gcca_fit(sample_num=sample_num, reg_param=r)
+            self.joint.cca_fit(sample_num=sample_num, reg_param=r)
 
-    def calc_accuracy_changing_reg_params(self, sample_num, reg_list, line_flag=False):
+    def calc_accuracy_changing_reg_params(self, sample_num, reg_list):
 
         res_cca_data = []
         res_gcca_data = []
 
         for reg in reg_list:
-            self.joint.gcca_transform(sample_num, line_flag=line_flag, reg_param=reg)
-            self.joint.cca_transform(sample_num, line_flag=line_flag, reg_param=reg)
+            self.joint.gcca_transform(sample_num, reg_param=reg)
+            self.joint.cca_transform(sample_num, reg_param=reg)
 
             res_cca_list, res_gcca_list = self.calc_accuracy(10, 310, 10)
             res_cca_data.append(res_cca_list)
@@ -115,5 +117,5 @@ class Experiment:
         # res_gcca_arr = np.load('output/results/res_gcca_reg_arr.npy')
         self.joint.plot_results(res_cca_arr, res_gcca_arr, reg_list, col_num=4)
 
-    def plot_original_data(self, line_flag):
+    def plot_original_data(self):
         self.joint.plot_original_data()
