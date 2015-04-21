@@ -237,7 +237,7 @@ class Joint():
         self.cca.corrcoef()
         self.gcca.corrcoef()
 
-    def plot_results(self, res_cca, res_gcca, title_list, col_num=2, mode=' SAMPLE'):
+    def plot_results(self, res_cca, res_gcca, title_list, col_num=2, mode='SAMPLE'):
 
         data_num = len(res_cca)
         row_num = data_num / col_num
@@ -246,15 +246,18 @@ class Joint():
             row_num = row_num + 1
 
         fig = plt.figure()
+        # plt.title('Accuracy')
         for i, (title, row_cca, row_gcca) in enumerate(zip(title_list, res_cca, res_gcca)):
 
             plt.subplot(row_num , col_num, i + 1)
             plt.plot(np.arange(len(row_cca)) * 10 + 10, row_cca, '-r')
             plt.plot(np.arange(len(row_gcca)) * 10 + 10, row_gcca, '-b')
+            x_min, x_max = plt.gca().get_xlim()
+            y_min, y_max = plt.gca().get_ylim()
             if mode == 'SAMPLE':
-                plt.title('Accuracy(sample:%d)' % title)
+                plt.text(0.5 * (x_min + x_max), 0.5 * (y_min + y_max), 'sample:%d' % title, ha='center', va='center', color='gray')
             elif mode == 'REG':
-                plt.title('Accuracy(reg:%f)' % title)
+                plt.text(0.5 * (x_min + x_max), 0.5 * (y_min + y_max), 'reg:%s' % title, ha='center', va='center', color='gray')
         plt.tight_layout()
         plt.show()
 

@@ -26,7 +26,8 @@ if __name__=="__main__":
     )
 
     # retrieval
-    joint.load_preprocessed_features(line_flag=False)
+    joint.create_features()
+    joint.pca_train_and_test_data()
     joint.cca_transform(line_flag=False, step=1, reg_param=0.1)
     joint.cca_plot()
     joint.gcca_transform(line_flag=False, step=1, reg_param=0.1)

@@ -16,8 +16,10 @@ if __name__=="__main__":
     #
     # ex.calc_accuracy_changing_sample_num(sample_num_list=[2000, 1500, 1000, 500])
 
-    ex.fit_changing_sample_num(sample_num_list=[500, 100, 50, 10])
+    sample_list = range(20, 501, 20)
 
-    ex.calc_accuracy_changing_sample_num(sample_num_list=[500, 100, 50, 10])
+    ex.fit_changing_sample_num(sample_num_list=sample_list)
+
+    ex.calc_accuracy_changing_sample_num(sample_num_list=sample_list)
     ex.plot_result(sample_num=500, reg_param=0.1)
 
