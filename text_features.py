@@ -19,9 +19,9 @@ class TextFeatures(BaseFeature):
     LINE_FEATURE_FILE = 'line_txt_feature.npy'
     RAW_FEATURE_FILE = 'raw_txt_feature.npy'
 
-    def __init__(self, data_dir, original_dir= None, min_df=1, compress_dim=None):
+    def __init__(self, data_dir, original_dir= None, min_df=1, compress_dim=None, feature_name='txt'):
 
-        BaseFeature.__init__(self, data_dir, original_dir, compress_dim)
+        BaseFeature.__init__(self, data_dir, original_dir, compress_dim, feature_name)
 
         self.vectorizer = CountVectorizer(min_df=min_df)
 
@@ -30,6 +30,7 @@ class TextFeatures(BaseFeature):
         self.line_count = None
 
     def create_bow_feature(self):
+        self.logger.info("creating bow feature")
 
         dirs = os.listdir(self.data_dir)
         dirs_sorted = sorted(dirs, int_sort)
@@ -37,9 +38,10 @@ class TextFeatures(BaseFeature):
         x = self.vectorizer.fit_transform(corpus)
         self.feature = x.toarray()
         self.terms = np.array(self.vectorizer.get_feature_names())
-        print self.feature.shape
+        self.logger.info("created feature: %s", self.feature.shape)
 
     def create_bow_feature_with_lines(self):
+        self.logger.info("creating bow feature as line data")
 
         dirs = os.listdir(self.data_dir)
         dirs_sorted = sorted(dirs, int_sort)
@@ -51,7 +53,7 @@ class TextFeatures(BaseFeature):
         x = self.vectorizer.fit_transform(corpus_flatten)
         self.feature = x.toarray()
         self.terms = np.array(self.vectorizer.get_feature_names())
-        print self.feature.shape
+        self.logger.info("created feature: %s", self.feature.shape)
 
     def read_text_by_id(self, text_id):
         text = None

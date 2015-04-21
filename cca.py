@@ -15,9 +15,9 @@ class CCA(object):
     def __init__(self, n_components=2, reg_param=0.1):
 
         # log setting
-        program = os.path.basename(sys.argv[0])
+        program = os.path.basename(__name__)
         self.logger = logging.getLogger(program)
-        logging.basicConfig(format='%(asctime)s : %(filename)s : %(levelname)s : %(message)s')
+        logging.basicConfig(format='%(asctime)s : %(name)s : %(levelname)s : %(message)s')
 
         # CCA params
         self.n_components = n_components

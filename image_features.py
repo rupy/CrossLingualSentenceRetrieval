@@ -15,22 +15,24 @@ class ImageFeatures(BaseFeature):
     LINE_FEATURE_FILE = 'line_img_feature.npy'
     RAW_FEATURE_FILE = 'raw_img_feature.npy'
 
-    def __init__(self, data_dir, original_dir=None, correspondence_path=None, compress_dim=None):
+    def __init__(self, data_dir, original_dir=None, correspondence_path=None, compress_dim=None, feature_name='img'):
 
-        BaseFeature.__init__(self, data_dir, original_dir, compress_dim)
+        BaseFeature.__init__(self, data_dir, original_dir, compress_dim, feature_name)
 
         self.correspondence_path = correspondence_path
 
     def load_original_feature(self):
+        self.logger.info("creating image feature")
         self.feature = np.load(self.data_dir)
-        print self.feature.shape
+        self.logger.info("created feature: %s", self.feature.shape)
 
 
     def load_feature_and_copy_line(self, line_count):
+        self.logger.info("creating image feature with copy")
         img_feature = np.load(self.data_dir)
         # copy rows
         self.feature = img_feature.repeat(line_count, axis=0)
-        print self.feature.shape
+        self.logger.info("created feature: %s", self.feature.shape)
 
     def plot_img_by_id(self, img_id):
         reader = csv.reader(open(self.correspondence_path, 'rb'))

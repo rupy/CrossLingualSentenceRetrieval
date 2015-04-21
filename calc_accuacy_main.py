@@ -10,8 +10,14 @@ if __name__=="__main__":
     logging.root.setLevel(level=logging.INFO)
 
     ex = experiment.Experiment(False)
+    ex.process_features()
 
-    ex.load_pca_features()
-    # ex.plot_result(line_flag=False, sample_num=100, reg_param=0.1)
+    # ex.fit_changing_sample_num(sample_num_list=[2000, 1500, 1000, 500])
+    #
+    # ex.calc_accuracy_changing_sample_num(sample_num_list=[2000, 1500, 1000, 500])
 
-    ex.calc_accuracy_changing_sample_num(sample_num_list=[100, 50, 10])
+    ex.fit_changing_sample_num(sample_num_list=[500, 100, 50, 10])
+
+    ex.calc_accuracy_changing_sample_num(sample_num_list=[500, 100, 50, 10])
+    ex.plot_result(sample_num=500, reg_param=0.1)
+

@@ -3,11 +3,12 @@ __author__ = 'rupy'
 from joint import Joint
 import logging
 import numpy as np
+import base_feature as feat
 
 class Experiment:
 
     PCA_COMPRESS_DIM = 100
-    SEED_NUM = 2
+    SEED_NUM =  3
 
     def __init__(self, line_flag=False):
 
@@ -29,22 +30,19 @@ class Experiment:
             Experiment.PCA_COMPRESS_DIM,
             line_flag
         )
-        np.random.seed(Experiment.SEED_NUM)
+        # np.random.seed(Experiment.SEED_NUM)
 
     def process_features(self):
-        self.joint.process_features()
-
-    def save_pca_features(self):
-        self.joint.process_features()
-        self.joint.save_pca_features()
-
-    def load_pca_features(self):
-        self.joint.load_pca_features()
+        self.joint.create_features()
+        self.joint.pca_train_and_test_data()
 
     def fit_changing_sample_num(self, sample_num_list):
+        data_num = self.joint.english_feature.get_train_data_num()
         for s in sample_num_list:
-            self.joint.gcca_fit(s)
-            self.joint.cca_fit(s)
+            sampled_indices = feat.BaseFeature.sample_indices(data_num, s)
+            print sampled_indices
+            self.joint.gcca_fit(s, 0.1, sampled_indices)
+            self.joint.cca_fit(s, 0.1, sampled_indices)
 
     def calc_accuracy(self, start_dim=1, end_dim=100, dim_step=1):
         res_cca_list = []
