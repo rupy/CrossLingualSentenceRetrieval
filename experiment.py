@@ -17,7 +17,7 @@ class Experiment:
     def __init__(self, line_flag=False):
 
         english_corpus_dir = '../PascalSentenceDataset/english/'
-        japanese_corpus_dir = '../PascalSentenceDataset/line_wakati/'
+        japanese_corpus_dir = '../PascalSentenceDataset/wakati/'
         japanese_original_corpus_dir = '../PascalSentenceDataset/japanese/'
         img_features_npy = 'pascal_features.npy'
         img_original_dir = '../PascalSentenceDataset/dataset/'
