@@ -69,6 +69,9 @@ class GCCA:
 
     def fit(self, x_1, x_2, x_3):
 
+        x_1 = self.normalize(x_1)
+        x_2 = self.normalize(x_2)
+        x_3 = self.normalize(x_3)
         self.x_1 = x_1
         self.x_2 = x_2
         self.x_3 = x_3

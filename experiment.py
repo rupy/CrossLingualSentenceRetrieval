@@ -4,6 +4,7 @@ from joint import Joint
 import logging
 import numpy as np
 import base_feature as feat
+import os
 
 class Experiment:
 
@@ -23,6 +24,10 @@ class Experiment:
         img_original_dir = '../PascalSentenceDataset/dataset/'
         img_correspondence_path = "../PascalSentenceDataset/correspondence.csv"
 
+        # log setting
+        program = os.path.basename(__name__)
+        self.logger = logging.getLogger(program)
+        logging.basicConfig(format='%(asctime)s : %(name)s : %(levelname)s : %(message)s')
 
         self.joint = Joint(
             english_corpus_dir,
@@ -34,7 +39,10 @@ class Experiment:
             Experiment.PCA_COMPRESS_DIM,
             line_flag
         )
-        # np.random.seed(Experiment.SEED_NUM)
+        self.logger.info("<Initilalizing Experiment>")
+        if Experiment.SEED_NUM is not None:
+            self.logger.info("seed: %s" , Experiment.SEED_NUM)
+            np.random.seed(Experiment.SEED_NUM)
 
     def process_features(self):
         self.joint.create_features()

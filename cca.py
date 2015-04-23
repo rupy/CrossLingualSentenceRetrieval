@@ -71,6 +71,8 @@ class CCA(object):
 
     def fit(self, x, y):
 
+        x = self.normalize(x)
+        y = self.normalize(y)
         self.x = x
         self.y = y
 
@@ -261,8 +263,11 @@ class CCA(object):
 if __name__=="__main__":
 
     # Reduce dimensions of x, y from 30, 20 to 10 respectively.
+    np.random.seed(100)
     x = np.random.random((100, 30))
     y = np.random.random((100, 20))
+    # x -= 100
+    # y -= 100
     cca = CCA(n_components=10, reg_param=0.1)
     x_c, y_c = cca.fit_transform(x, y)
 
