@@ -7,6 +7,7 @@ import base_feature as feat
 import os
 from matplotlib import pyplot as plt
 from sklearn.neighbors import NearestNeighbors
+import yaml
 
 class Experiment:
 
@@ -17,27 +18,35 @@ class Experiment:
     MIN_DIM = 10
     DIM_STEP = 10
 
+    CONFIG_YAML = 'config.yml'
+
     def __init__(self, line_flag=False):
 
-        english_corpus_dir = '../PascalSentenceDataset/english/'
-        japanese_corpus_dir = '../PascalSentenceDataset/wakati/'
-        japanese_original_corpus_dir = '../PascalSentenceDataset/japanese/'
-        img_features_npy = 'pascal_features.npy'
-        img_original_dir = '../PascalSentenceDataset/dataset/'
-        img_correspondence_path = "../PascalSentenceDataset/correspondence.csv"
 
         # log setting
         program = os.path.basename(__name__)
         self.logger = logging.getLogger(program)
         logging.basicConfig(format='%(asctime)s : %(name)s : %(levelname)s : %(message)s')
 
+        # load config file
+        f = open(Experiment.CONFIG_YAML, 'r')
+        self.config = yaml.load(f)
+        f.close()
+
+        self.english_corpus_dir = self.config['english_corpus_dir']
+        self.japanese_corpus_dir = self.config['japanese_corpus_dir']
+        self.japanese_original_corpus_dir = self.config['japanese_original_corpus_dir']
+        self.img_features_npy = self.config['img_features_npy']
+        self.img_original_dir = self.config['img_original_dir']
+        self.img_correspondence_path = self.config['img_correspondence_path']
+
         self.joint = Joint(
-            english_corpus_dir,
-            img_features_npy,
-            japanese_corpus_dir,
-            img_original_dir,
-            img_correspondence_path,
-            japanese_original_corpus_dir,
+            self.english_corpus_dir,
+            self.img_features_npy,
+            self.japanese_corpus_dir,
+            self.img_original_dir,
+            self.img_correspondence_path,
+            self.japanese_original_corpus_dir,
             Experiment.PCA_COMPRESS_DIM,
             line_flag
         )
