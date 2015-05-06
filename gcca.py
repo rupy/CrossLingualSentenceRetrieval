@@ -40,6 +40,15 @@ class GCCA:
         self.h_3 = None
         self.eigvals = None
 
+    def eigvec_normalization(self, eig_vecs, x_var):
+        self.logger.info("normalization")
+        z_var = np.dot(eig_vecs.T, np.dot(x_var, eig_vecs))
+        invvar = np.diag(np.reciprocal(np.sqrt(np.diag(z_var))))
+        eig_vecs = np.dot(eig_vecs, invvar)
+        print np.dot(eig_vecs.T, np.dot(x_var, eig_vecs)).round().astype(int)
+        return eig_vecs
+
+
     def solve_eigprob(self, left, right):
 
         self.logger.info("calculating eigen dimension")
@@ -52,17 +61,6 @@ class GCCA:
         sort_indices = np.argsort(eig_vals)[::-1]
         eig_vals = eig_vals[sort_indices][:eig_dim].real
         eig_vecs = eig_vecs[:,sort_indices][:,:eig_dim].real
-
-        # regularization
-        self.logger.info("regularizing")
-        # eig_vecs = np.dot(eig_vecs, np.diag(np.reciprocal(np.linalg.norm(eig_vecs, axis=0))))
-        var = np.dot(eig_vecs.T, np.dot(right, eig_vecs))
-        # print var
-        invvar = np.diag(np.reciprocal(np.sqrt(np.diag(var))))
-        # print invvar
-        eig_vecs = np.dot(eig_vecs, invvar)
-
-        # print np.dot(eig_vecs.T, np.dot(right, eig_vecs)).round().astype(int)
 
         return eig_vals, eig_vecs
 
@@ -118,10 +116,11 @@ class GCCA:
         ])
         eigvals, eigvecs = self.solve_eigprob(left, right)
 
+
         # substitute local variables for member variables
-        self.h_1 = eigvecs[:d1]
-        self.h_2 = eigvecs[d1:d2]
-        self.h_3 = eigvecs[d2:]
+        self.h_1 = self.eigvec_normalization(eigvecs[:d1], c11)
+        self.h_2 = self.eigvec_normalization(eigvecs[d1:d2], c22)
+        self.h_3 = self.eigvec_normalization(eigvecs[d2:], c33)
         self.eigvals = eigvals
         self.c11 = c11
         self.c22 = c22
