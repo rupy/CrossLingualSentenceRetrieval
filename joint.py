@@ -6,7 +6,6 @@ __author__ = 'rupy'
 import text_features as txt
 import image_features as img
 import gcca
-import cca
 import logging
 from sklearn.neighbors import NearestNeighbors
 import os
@@ -40,7 +39,7 @@ class Joint():
         self.japanese_feature = txt.TextFeatures(jp_dir, jp_original_dir, compress_dim=compress_dim)
         self.image_feature = img.ImageFeatures(img_path, img_original_dir, img_correspondence_path, compress_dim)
         self.gcca = gcca.GCCA()
-        self.cca = cca.CCA()
+        self.cca = gcca.CCA()
         self.line_flag = line_flag
 
         self.logger.info("===== initializing =====")
@@ -102,23 +101,22 @@ class Joint():
         save_dir = self.__get_cca_save_dir(sample_num, reg_param)
         if not os.path.isdir(save_dir):
             os.makedirs(save_dir)
-        self.cca.save_params(save_dir)
+        self.cca.save_params(save_dir + 'params.h5')
 
     def cca_transform(self, sample_num, reg_param):
         self.logger.info("====== transforming by CCA ======")
         self.logger.info("sample_num:%d reg_param:%f", sample_num, reg_param)
 
         save_dir = self.__get_cca_save_dir(sample_num, reg_param)
-        self.cca.load_params(save_dir)
+        self.cca.load_params(save_dir + 'params.h5')
 
         self.cca.transform(
             self.english_feature.test_feature_pca,
             self.japanese_feature.test_feature_pca
         )
-        self.cca.fix_reverse()
 
     def cca_plot(self):
-        self.cca.plot_cca_result(False)
+        self.cca.plot_result()
 
     def gcca_fit(self, sample_num, reg_param, sampled_indices):
         self.logger.info("====== sampling training data ======")
@@ -135,14 +133,14 @@ class Joint():
         save_dir = self.__get_gcca_save_dir(sample_num, reg_param)
         if not os.path.isdir(save_dir):
             os.makedirs(save_dir)
-        self.gcca.save_params(save_dir)
+        self.gcca.save_params(save_dir + 'params.h5')
 
     def gcca_transform(self, sample_num, reg_param):
         self.logger.info("====== transforming by GCCA ======")
         self.logger.info("sample_num :%d reg_param:%f", sample_num, reg_param)
 
         save_dir = self.__get_gcca_save_dir(sample_num, reg_param)
-        self.gcca.load_params(save_dir)
+        self.gcca.load_params(save_dir + 'params.h5')
 
         self.gcca.transform(
             self.english_feature.test_feature_pca,
@@ -151,13 +149,13 @@ class Joint():
         )
 
     def gcca_plot(self):
-        self.gcca.plot_gcca_result()
+        self.gcca.plot_result()
 
     def retrieval_j2e_by_gcca(self, j_id, neighbor_num = 10):
 
         min_dim = 30
 
-        en_mat, im_mat, jp_mat = self.gcca.z_1[:, :min_dim], self.gcca.z_2[:, :min_dim], self.gcca.z_3[:, :min_dim]
+        en_mat, im_mat, jp_mat = self.gcca.z_list[0][:, :min_dim], self.gcca.z_list[1][:, :min_dim], self.gcca.z_list[2][:, :min_dim]
 
         nn = NearestNeighbors(n_neighbors=2, algorithm='ball_tree').fit(en_mat)
         dists, nn_indices = nn.kneighbors([jp_mat[j_id - 1]], neighbor_num, return_distance=True)
@@ -172,7 +170,7 @@ class Joint():
 
         min_dim = 30
 
-        en_mat, jp_mat = self.cca.x_c[:, :min_dim], self.cca.y_s[:, :min_dim]
+        en_mat, jp_mat = self.cca.z_list[0][:, :min_dim], self.cca.z_list[1][:, :min_dim]
 
         nn = NearestNeighbors(n_neighbors=2, algorithm='ball_tree').fit(en_mat)
         dists, nn_indices = nn.kneighbors([jp_mat[j_id - 1]], neighbor_num, return_distance=True)
@@ -187,7 +185,7 @@ class Joint():
 
         min_dim = 30
 
-        en_mat, im_mat, jp_mat = self.gcca.z_1[:, :min_dim], self.gcca.z_2[:, :min_dim], self.gcca.z_3[:, :min_dim]
+        en_mat, im_mat, jp_mat = self.gcca.z_list[0][:, :min_dim], self.gcca.z_list[1][:, :min_dim], self.gcca.z_list[2][:, :min_dim]
 
         nn = NearestNeighbors(n_neighbors=2, algorithm='ball_tree').fit(im_mat)
         dists, nn_indices = nn.kneighbors([jp_mat[j_id - 1]], neighbor_num, return_distance=True)
@@ -201,7 +199,7 @@ class Joint():
 
     def cca_calc_search_precision(self, min_dim, neighbor_num=1):
 
-        en_mat, jp_mat = self.cca.x_c[:, :min_dim], self.cca.y_s[:, :min_dim]
+        en_mat, jp_mat = self.cca.z_list[0][:, :min_dim], self.cca.z_list[1][:, :min_dim]
         nn = NearestNeighbors(n_neighbors=2, algorithm='ball_tree').fit(en_mat)
         dists, nn_indices = nn.kneighbors(jp_mat, neighbor_num, return_distance=True)
         hit_count = 0
@@ -219,7 +217,7 @@ class Joint():
 
     def gcca_calc_search_precision(self, min_dim, neighbor_num=1):
 
-        en_mat, im_mat, jp_mat = self.gcca.z_1[:, :min_dim], self.gcca.z_2[:, :min_dim], self.gcca.z_3[:, :min_dim]
+        en_mat, im_mat, jp_mat = self.gcca.z_list[0][:, :min_dim], self.gcca.z_list[1][:, :min_dim], self.gcca.z_list[2][:, :min_dim]
         nn = NearestNeighbors(n_neighbors=2, algorithm='ball_tree').fit(en_mat)
         dists, nn_indices = nn.kneighbors(jp_mat, neighbor_num, return_distance=True)
         hit_count = 0
@@ -234,8 +232,8 @@ class Joint():
         return float(hit_count) / len(nn_indices) * 100
 
     def compare_correlation_coefficient(self):
-        self.cca.corrcoef()
-        self.gcca.corrcoef()
+        self.cca.calc_correlations()
+        self.gcca.calc_correlations()
 
     def plot_results(self, res_cca, res_gcca, title_list, col_num=2, mode='SAMPLE'):
 
