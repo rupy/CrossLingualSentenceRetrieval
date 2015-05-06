@@ -5,11 +5,13 @@ import logging
 import numpy as np
 import base_feature as feat
 import os
+from matplotlib import pyplot as plt
+from sklearn.neighbors import NearestNeighbors
 
 class Experiment:
 
     PCA_COMPRESS_DIM = 100
-    SEED_NUM =  3
+    SEED_NUM = None
 
     MAX_DIM = 300
     MIN_DIM = 10
@@ -61,8 +63,8 @@ class Experiment:
 
         print "|dim|CCA|GCCA|"
         for i in xrange(start_dim, end_dim, dim_step):
-            res_cca = self.joint.cca_calc_search_precision(i)
-            res_gcca = self.joint.gcca_calc_search_precision(i)
+            res_cca = self.cca_calc_search_precision(i)
+            res_gcca = self.gcca_calc_search_precision(i)
             print "|%d|%f|%f|" % (i, res_cca, res_gcca)
             res_cca_list.append(res_cca)
             res_gcca_list.append(res_gcca)
@@ -96,7 +98,7 @@ class Experiment:
         # joint.gcca_transform(mode='PART', line_flag=True, step=5)
         # res_cca_arr = np.load('output/results/res_cca_arr.npy')
         # res_gcca_arr = np.load('output/results/res_gcca_arr.npy')
-        self.joint.plot_results(res_cca_arr, res_gcca_arr, sample_num_list, col_num)
+        self.plot_results(res_cca_arr, res_gcca_arr, sample_num_list, col_num)
 
     def fit_chenging_regparam(self, reg_params, sample_num=500):
         data_num = self.joint.english_feature.get_train_data_num()
@@ -126,7 +128,63 @@ class Experiment:
         # joint.gcca_transform(line_flag=True, step=5)
         # res_cca_arr = np.load('output/results/res_cca_reg_arr.npy')
         # res_gcca_arr = np.load('output/results/res_gcca_reg_arr.npy')
-        self.joint.plot_results(res_cca_arr, res_gcca_arr, reg_list, col_num, 'REG')
+        self.plot_results(res_cca_arr, res_gcca_arr, reg_list, col_num, 'REG')
 
     def plot_original_data(self):
         self.joint.plot_original_data()
+
+    def cca_calc_search_precision(self, min_dim, neighbor_num=1):
+
+        en_mat, jp_mat = self.joint.cca.z_list[0][:, :min_dim], self.joint.cca.z_list[1][:, :min_dim]
+        nn = NearestNeighbors(n_neighbors=2, algorithm='ball_tree').fit(en_mat)
+        dists, nn_indices = nn.kneighbors(jp_mat, neighbor_num, return_distance=True)
+        hit_count = 0
+        for j_idx, nn_indices_row in enumerate(nn_indices):
+            # print nn_indices_row
+            if j_idx in nn_indices_row:
+                # print True
+                hit_count += 1
+            else:
+                pass
+                # print False
+        return float(hit_count) / len(nn_indices) * 100
+
+    def gcca_calc_search_precision(self, min_dim, neighbor_num=1):
+
+        en_mat, im_mat, jp_mat = self.joint.gcca.z_list[0][:, :min_dim], self.joint.gcca.z_list[1][:, :min_dim], self.joint.gcca.z_list[2][:, :min_dim]
+        nn = NearestNeighbors(n_neighbors=2, algorithm='ball_tree').fit(en_mat)
+        dists, nn_indices = nn.kneighbors(jp_mat, neighbor_num, return_distance=True)
+        hit_count = 0
+        for j_idx, nn_indices_row in enumerate(nn_indices):
+            # print nn_indices_row
+            if j_idx in nn_indices_row:
+                # print True
+                hit_count += 1
+            else:
+                # print False
+                pass
+        return float(hit_count) / len(nn_indices) * 100
+
+    def plot_results(self, res_cca, res_gcca, title_list, col_num=2, mode='SAMPLE'):
+
+        data_num = len(res_cca)
+        row_num = data_num / col_num
+        if row_num - float(data_num)/col_num != 0:
+            print row_num
+            row_num = row_num + 1
+
+        fig = plt.figure()
+        # plt.title('Accuracy')
+        for i, (title, row_cca, row_gcca) in enumerate(zip(title_list, res_cca, res_gcca)):
+
+            plt.subplot(row_num , col_num, i + 1)
+            plt.plot(np.arange(len(row_cca)) * 10 + 10, row_cca, '-r')
+            plt.plot(np.arange(len(row_gcca)) * 10 + 10, row_gcca, '-b')
+            x_min, x_max = plt.gca().get_xlim()
+            y_min, y_max = plt.gca().get_ylim()
+            if mode == 'SAMPLE':
+                plt.text(0.5 * (x_min + x_max), 0.5 * (y_min + y_max), 'sample:%d' % title, ha='center', va='center', color='gray')
+            elif mode == 'REG':
+                plt.text(0.5 * (x_min + x_max), 0.5 * (y_min + y_max), 'reg:%s' % title, ha='center', va='center', color='gray')
+        plt.tight_layout()
+        plt.show()

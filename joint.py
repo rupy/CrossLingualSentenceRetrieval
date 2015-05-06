@@ -197,67 +197,9 @@ class Joint():
         #     self.image_feature.plot_img_by_id(idx + 1)
         self.image_feature.plot_img_by_ids(nn_indices[0] + 1)
 
-    def cca_calc_search_precision(self, min_dim, neighbor_num=1):
-
-        en_mat, jp_mat = self.cca.z_list[0][:, :min_dim], self.cca.z_list[1][:, :min_dim]
-        nn = NearestNeighbors(n_neighbors=2, algorithm='ball_tree').fit(en_mat)
-        dists, nn_indices = nn.kneighbors(jp_mat, neighbor_num, return_distance=True)
-        hit_count = 0
-        for j_idx, nn_indices_row in enumerate(nn_indices):
-            # print nn_indices_row
-            if j_idx in nn_indices_row:
-                # print True
-                hit_count += 1
-            else:
-                pass
-                # print False
-        return float(hit_count) / len(nn_indices) * 100
-
-
-
-    def gcca_calc_search_precision(self, min_dim, neighbor_num=1):
-
-        en_mat, im_mat, jp_mat = self.gcca.z_list[0][:, :min_dim], self.gcca.z_list[1][:, :min_dim], self.gcca.z_list[2][:, :min_dim]
-        nn = NearestNeighbors(n_neighbors=2, algorithm='ball_tree').fit(en_mat)
-        dists, nn_indices = nn.kneighbors(jp_mat, neighbor_num, return_distance=True)
-        hit_count = 0
-        for j_idx, nn_indices_row in enumerate(nn_indices):
-            # print nn_indices_row
-            if j_idx in nn_indices_row:
-                # print True
-                hit_count += 1
-            else:
-                # print False
-                pass
-        return float(hit_count) / len(nn_indices) * 100
-
     def compare_correlation_coefficient(self):
         self.cca.calc_correlations()
         self.gcca.calc_correlations()
-
-    def plot_results(self, res_cca, res_gcca, title_list, col_num=2, mode='SAMPLE'):
-
-        data_num = len(res_cca)
-        row_num = data_num / col_num
-        if row_num - float(data_num)/col_num != 0:
-            print row_num
-            row_num = row_num + 1
-
-        fig = plt.figure()
-        # plt.title('Accuracy')
-        for i, (title, row_cca, row_gcca) in enumerate(zip(title_list, res_cca, res_gcca)):
-
-            plt.subplot(row_num , col_num, i + 1)
-            plt.plot(np.arange(len(row_cca)) * 10 + 10, row_cca, '-r')
-            plt.plot(np.arange(len(row_gcca)) * 10 + 10, row_gcca, '-b')
-            x_min, x_max = plt.gca().get_xlim()
-            y_min, y_max = plt.gca().get_ylim()
-            if mode == 'SAMPLE':
-                plt.text(0.5 * (x_min + x_max), 0.5 * (y_min + y_max), 'sample:%d' % title, ha='center', va='center', color='gray')
-            elif mode == 'REG':
-                plt.text(0.5 * (x_min + x_max), 0.5 * (y_min + y_max), 'reg:%s' % title, ha='center', va='center', color='gray')
-        plt.tight_layout()
-        plt.show()
 
     def plot_original_data(self):
         """
