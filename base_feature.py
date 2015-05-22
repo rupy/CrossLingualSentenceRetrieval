@@ -130,16 +130,16 @@ class BaseFeature():
 
     @staticmethod
     def all_indices1(data_num):
-        all_indices = range(data_num / 3)
-        return all_indices
+        all_indices = range(0, data_num, 5) + range(2, data_num, 5)
+        return sorted(all_indices)
 
     @staticmethod
     def all_indices2(data_num):
-        all_indices = range(data_num / 3, data_num / 3 * 2)
-        return all_indices
+        all_indices = range(1, data_num, 5) + range(3, data_num, 5)
+        return sorted(all_indices)
 
     @staticmethod
     def sample_indices3(data_num, sample_num):
-        all_indices = range(data_num / 3 * 2, data_num)
+        all_indices = range(4, data_num, 5)
         sampled_indices = np.random.choice(all_indices, sample_num, False)
         return sorted(sampled_indices)

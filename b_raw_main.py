@@ -16,7 +16,7 @@ if __name__=="__main__":
     #
     # ex.calc_accuracy_changing_sample_num(sample_num_list=[2000, 1500, 1000, 500])
 
-    sample_list = range(0, 500 / 3 + 1, 20)
+    sample_list = range(0, 500 / 3 + 1, 10)
 
     ex.fit_changing_sample_num(sample_num_list=sample_list)
 

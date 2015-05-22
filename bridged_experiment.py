@@ -26,13 +26,13 @@ class BridgedExperiment(Experiment):
 
     def fit_changing_sample_num(self, sample_num_list):
         data_num = self.joint.english_feature.get_train_data_num()
+        sampled_indices1 = feat.BaseFeature.all_indices1(data_num)
+        sampled_indices2 = feat.BaseFeature.all_indices2(data_num)
         for s in sample_num_list:
-            sampled_indices1 = feat.BaseFeature.all_indices1(data_num)
-            sampled_indices2 = feat.BaseFeature.all_indices2(data_num)
             sampled_indices3 = feat.BaseFeature.sample_indices3(data_num, s)
-            self.joint.bcca_fit(s, 0.1, sampled_indices1, sampled_indices2, sampled_indices3)
+            self.joint.bcca_fit(s, 0.01, sampled_indices1, sampled_indices2, sampled_indices3)
             if s != 0:
-                self.joint.cca_fit(s, 0.1, sampled_indices3)
+                self.joint.cca_fit(s, 0.01, sampled_indices3)
 
     def calc_accuracy(self, start_dim=1, end_dim=100, dim_step=1, cca_flag=True):
         res_cca_list = []
@@ -80,6 +80,7 @@ class BridgedExperiment(Experiment):
         # res_cca_arr = np.load('output/results/res_cca_arr.npy')
         # res_bcca_arr = np.load('output/results/res_bcca_arr.npy')
         self.plot_results(res_cca_arr, res_bcca_arr, sample_num_list, col_num)
+        self.plot_max_results(res_cca_arr, res_bcca_arr, sample_num_list)
 
     def fit_chenging_regparam(self, reg_params, sample_num=500):
         data_num = self.joint.english_feature.get_train_data_num()
@@ -117,7 +118,7 @@ class BridgedExperiment(Experiment):
     def bcca_calc_search_precision(self, min_dim, neighbor_num=1):
 
         en_mat, im_mat, jp_mat = self.joint.bcca.z_list[0][:, :min_dim], self.joint.bcca.z_list[1][:, :min_dim], self.joint.bcca.z_list[2][:, :min_dim]
-        nn = NearestNeighbors(n_neighbors=2, algorithm='ball_tree').fit(en_mat)
+        nn = NearestNeighbors(n_neighbors=1, algorithm='ball_tree').fit(en_mat)
         dists, nn_indices = nn.kneighbors(jp_mat, neighbor_num, return_distance=True)
         hit_count = 0
         for j_idx, nn_indices_row in enumerate(nn_indices):
@@ -152,4 +153,12 @@ class BridgedExperiment(Experiment):
             elif mode == 'REG':
                 plt.text(0.5 * (x_min + x_max), 0.5 * (y_min + y_max), 'reg:%s' % title, ha='center', va='center', color='gray')
         plt.tight_layout()
+        plt.show()
+
+    def plot_max_results(self, res_cca_arr, res_bcca_arr, sample_num_list):
+        plt.plot(sample_num_list, res_cca_arr.max(axis=1), '-g', label = "CCA")
+        plt.plot(sample_num_list, res_bcca_arr.max(axis=1), '-b', label = "Bridged CCA")
+        plt.legend()
+        plt.ylabel("top 1 Retrieval Accuracy(%)")
+        plt.xlabel("sampling num in <train3>")
         plt.show()
