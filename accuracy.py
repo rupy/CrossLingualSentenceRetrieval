@@ -28,11 +28,10 @@ class Accuracy:
 
         # calc precisions changing search_num
         precisions = np.array(
-            [precision_score(y_true[:(i+1)], y_pred[:(i+1)]) for i in xrange(search_num)]
+            [precision_score(y_true[:(i+1)], y_pred[:(i+1)], average='micro') for i in xrange(search_num)]
         )
 
         hit_precisions = precisions[y_true == y_pred]
-        print precisions
         # calc average precision
         average_precision = hit_precisions.sum() / len(hit_precisions)
         return average_precision
