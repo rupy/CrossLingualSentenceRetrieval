@@ -16,23 +16,24 @@ class Accuracy:
     @staticmethod
     def recall(tp_num, fn_num):
         all_retrieved_num = tp_num + fn_num
-        return tp_num / all_retrieved_num
+        return 1.0 * tp_num / all_retrieved_num
 
     @staticmethod
-    def average_precision(hit_list):
+    def average_precision(y_true, y_pred):
 
-        hit = np.array(hit_list)
-        search_num = len(hit_list)
+        y_true = np.array(y_true)
+        y_pred = np.array(y_pred)
+
+        search_num = len(y_true)
 
         # calc precisions changing search_num
         precisions = np.array(
-            [Accuracy.precision(
-                len(hit[:(i+1)][hit[:(i+1)] == 1]), # true positive
-                len(hit[:(i+1)][hit[:(i+1)] == 0])  # false positive
-            ) for i in xrange(search_num)])
+            [precision_score(y_true[:(i+1)], y_pred[:(i+1)]) for i in xrange(search_num)]
+        )
 
+        hit_precisions = precisions[y_true == y_pred]
+        print precisions
         # calc average precision
-        hit_precisions = precisions[hit == 1]
         average_precision = hit_precisions.sum() / len(hit_precisions)
         return average_precision
 
@@ -43,10 +44,10 @@ class Accuracy:
         return mean_average_precision
 
     @staticmethod
-    def calc_mean_average_precision(hit_list_list):
+    def calc_mean_average_precision(y_true_list, y_pred_list):
         ave_prec_list = []
-        for hit_list in hit_list_list:
-            ave_prec = Accuracy.average_precision(hit_list)
+        for y_true, y_pred in y_true_list, y_pred_list:
+            ave_prec = Accuracy.average_precision(y_true, y_pred)
             ave_prec_list.append(ave_prec)
         mean_average_precision = Accuracy.mean_average_precision(ave_prec_list)
         return mean_average_precision
@@ -54,12 +55,10 @@ class Accuracy:
 if __name__=="__main__":
 
 
-    # hit1 = [1, 0, 1, 0, 1, 1, 0, 0, 0, 0]
-    hit2 = [1, 0, 1, 0, 0, 1, 0, 0, 1, 1]
-    hit3 = [0, 1, 0, 0, 1, 0, 1, 0, 0, 0]
-    hit_list_list = [hit2, hit3]
+    y_true = [1, 0, 1, 0, 1, 1, 0, 0, 0, 0]
+    y_pred = [1, 1, 1, 1, 1, 1, 1, 1, 1, 1]
 
-    print Accuracy.calc_mean_average_precision(hit_list_list)
+    print Accuracy.average_precision(y_true, y_pred)
 
     y_true = [0, 1, 2, 0, 1, 2]
     y_pred = [0, 2, 1, 0, 0, 1]
