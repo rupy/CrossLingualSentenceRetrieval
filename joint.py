@@ -28,16 +28,16 @@ class Joint():
 
     FEATURE_DIR = OUTPUT_DIR + 'features/'
 
-    def __init__(self, en_dir, img_path, jp_dir, img_original_dir=None, img_correspondence_path=None, jp_original_dir=None, compress_dim=100, line_flag=False):
+    def __init__(self, en_dir, img_path, jp_dir, img_original_dir=None, img_correspondence_path=None, jp_original_dir=None, compress_word_dim=100, compress_img_dim=100, line_flag=False):
 
         # log setting
         program = os.path.basename(__name__)
         self.logger = logging.getLogger(program)
         logging.basicConfig(format='%(asctime)s : %(name)s : %(levelname)s : %(message)s')
 
-        self.english_feature = txt.TextFeatures(en_dir, compress_dim=compress_dim, feature_name='eng')
-        self.japanese_feature = txt.TextFeatures(jp_dir, jp_original_dir, compress_dim=compress_dim)
-        self.image_feature = img.ImageFeatures(img_path, img_original_dir, img_correspondence_path, compress_dim)
+        self.english_feature = txt.TextFeatures(en_dir, compress_dim=compress_word_dim, feature_name='eng')
+        self.japanese_feature = txt.TextFeatures(jp_dir, jp_original_dir, compress_dim=compress_word_dim)
+        self.image_feature = img.ImageFeatures(img_path, img_original_dir, img_correspondence_path, compress_img_dim)
         self.gcca = gcca.GCCA()
         self.cca = gcca.CCA()
         self.line_flag = line_flag

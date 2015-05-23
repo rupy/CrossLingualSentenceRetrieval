@@ -20,20 +20,21 @@ class BridgedExperiment(Experiment):
             self.img_original_dir,
             self.img_correspondence_path,
             self.japanese_original_corpus_dir,
-            BridgedExperiment.PCA_COMPRESS_DIM,
+            BridgedExperiment.PCA_COMPRESS_WORD_DIM,
+            BridgedExperiment.PCA_COMPRESS_IMG_DIM,
             line_flag
         )
 
-    def fit_changing_sample_num(self, sample_num_list):
+    def fit_changing_sample_num(self, sample_num_list, reg_param=0.01):
         data_num = self.joint.english_feature.get_train_data_num()
         sampled_indices1 = feat.BaseFeature.all_indices1(data_num)
         sampled_indices2 = feat.BaseFeature.all_indices2(data_num)
         for s in sample_num_list:
             print s
             sampled_indices3 = feat.BaseFeature.sample_indices3(data_num, s)
-            self.joint.bcca_fit(s, 0.01, sampled_indices1, sampled_indices2, sampled_indices3)
+            self.joint.bcca_fit(s, reg_param, sampled_indices1, sampled_indices2, sampled_indices3)
             if s != 0:
-                self.joint.cca_fit(s, 0.01, sampled_indices3)
+                self.joint.cca_fit(s, reg_param, sampled_indices3)
 
     def calc_accuracy(self, start_dim=1, end_dim=100, dim_step=1, cca_flag=True):
         res_cca_list = []
@@ -52,13 +53,13 @@ class BridgedExperiment(Experiment):
 
         return res_cca_list, res_bcca_list
 
-    def plot_result(self, sample_num=500, reg_param=0.1):
+    def plot_result(self, sample_num=500, reg_param=0.01):
         self.joint.cca_transform(sample_num, reg_param)
         self.joint.bcca_transform(sample_num, reg_param)
         self.joint.cca_plot()
         self.joint.bcca_plot()
 
-    def calc_accuracy_changing_sample_num(self, sample_num_list, reg_param=0.1):
+    def calc_accuracy_changing_sample_num(self, sample_num_list, reg_param=0.01):
 
         res_cca_data = []
         res_bcca_data = []

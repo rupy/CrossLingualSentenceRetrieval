@@ -25,9 +25,9 @@ class BridgedJoint(Joint):
     LINE_BCCA_DIR = CCA_PARAMS_SAVE_DIR + "line_bcca/"
     RAW_BCCA_DIR = CCA_PARAMS_SAVE_DIR + "raw_bcca/"
 
-    def __init__(self, en_dir, img_path, jp_dir, img_original_dir=None, img_correspondence_path=None, jp_original_dir=None, compress_dim=100, line_flag=False):
+    def __init__(self, en_dir, img_path, jp_dir, img_original_dir=None, img_correspondence_path=None, jp_original_dir=None, compress_word_dim=100, compress_img_dim=100, line_flag=False):
 
-        Joint.__init__(self, en_dir, img_path, jp_dir, img_original_dir, img_correspondence_path, jp_original_dir, compress_dim, line_flag)
+        Joint.__init__(self, en_dir, img_path, jp_dir, img_original_dir, img_correspondence_path, jp_original_dir, compress_word_dim, compress_img_dim, line_flag)
 
         self.bcca = gcca.BridgedCCA()
 
@@ -50,7 +50,7 @@ class BridgedJoint(Joint):
             os.mkdir(BridgedJoint.FEATURE_DIR)
 
     def __get_bcca_save_dir(self, sample_num, reg_param):
-        return (BridgedJoint.LINE_BCCA_DIR if self.line_flag else BridgedJoint.RAW_GCCA_DIR) + str(reg_param).replace(".", "_") + '/' + str(sample_num) + '/'
+        return (BridgedJoint.LINE_BCCA_DIR if self.line_flag else BridgedJoint.RAW_BCCA_DIR) + str(reg_param).replace(".", "_") + '/' + str(sample_num) + '/'
 
     def bcca_fit(self, sample_num, reg_param, sampled_indices1, sampled_indices2, sampled_indices3):
         self.logger.info("====== sampling training data ======")

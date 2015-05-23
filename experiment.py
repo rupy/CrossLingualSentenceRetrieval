@@ -12,7 +12,8 @@ from accuracy import Accuracy
 
 class Experiment:
 
-    PCA_COMPRESS_DIM = 100
+    PCA_COMPRESS_WORD_DIM = 100
+    PCA_COMPRESS_IMG_DIM = 100
     SEED_NUM = None
 
     MAX_DIM = 300
@@ -47,7 +48,8 @@ class Experiment:
             self.img_original_dir,
             self.img_correspondence_path,
             self.japanese_original_corpus_dir,
-            Experiment.PCA_COMPRESS_DIM,
+            Experiment.PCA_COMPRESS_WORD_DIM,
+            Experiment.PCA_COMPRESS_IMG_DIM,
             line_flag
         )
         self.logger.info("<Initilalizing Experiment>")

@@ -19,6 +19,7 @@ if __name__=="__main__":
 
     sample_list = range(0, 100 + 1, 10)
 
+    # calc average of fit & result
     try_num = 1
     res_cca_list = []
     res_bcca_list = []
@@ -34,5 +35,5 @@ if __name__=="__main__":
 
     ex.plot_results(cca_avg, bcca_avg, sample_list, 5)
     ex.plot_max_results(cca_avg, bcca_avg, sample_list)
-    ex.plot_result(sample_num=500, reg_param=0.1)
+    ex.plot_result(sample_num=100, reg_param=0.01)
 
