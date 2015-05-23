@@ -16,6 +16,7 @@ if __name__=="__main__":
 
     ex.fit_changing_sample_num(sample_num_list=sample_list)
 
-    ex.calc_accuracy_changing_sample_num(sample_num_list=sample_list)
+    res_cca, res_gcca = ex.calc_accuracy_changing_sample_num(sample_num_list=sample_list)
+    ex.plot_results(res_cca, res_gcca, sample_list, 5)
     ex.plot_result(sample_num=2400, reg_param=0.1)
 

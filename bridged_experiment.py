@@ -29,6 +29,7 @@ class BridgedExperiment(Experiment):
         sampled_indices1 = feat.BaseFeature.all_indices1(data_num)
         sampled_indices2 = feat.BaseFeature.all_indices2(data_num)
         for s in sample_num_list:
+            print s
             sampled_indices3 = feat.BaseFeature.sample_indices3(data_num, s)
             self.joint.bcca_fit(s, 0.01, sampled_indices1, sampled_indices2, sampled_indices3)
             if s != 0:
@@ -57,7 +58,7 @@ class BridgedExperiment(Experiment):
         self.joint.cca_plot()
         self.joint.bcca_plot()
 
-    def calc_accuracy_changing_sample_num(self, sample_num_list, reg_param=0.1, col_num=5):
+    def calc_accuracy_changing_sample_num(self, sample_num_list, reg_param=0.1):
 
         res_cca_data = []
         res_bcca_data = []
@@ -79,8 +80,8 @@ class BridgedExperiment(Experiment):
         # joint.bcca_transform(mode='PART', line_flag=True, step=5)
         # res_cca_arr = np.load('output/results/res_cca_arr.npy')
         # res_bcca_arr = np.load('output/results/res_bcca_arr.npy')
-        self.plot_results(res_cca_arr, res_bcca_arr, sample_num_list, col_num)
-        self.plot_max_results(res_cca_arr, res_bcca_arr, sample_num_list)
+
+        return res_cca_arr, res_bcca_arr
 
     def fit_chenging_regparam(self, reg_params, sample_num=500):
         data_num = self.joint.english_feature.get_train_data_num()

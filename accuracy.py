@@ -19,16 +19,20 @@ class Accuracy:
         return 1.0 * tp_num / all_retrieved_num
 
     @staticmethod
-    def average_precision(y_true, y_pred):
+    def average_precision(y_true, y_pred, labels):
 
         y_true = np.array(y_true)
         y_pred = np.array(y_pred)
 
         search_num = len(y_true)
 
+        # for warning
+        if labels is not None and len(labels) == 2:
+            labels = None
+
         # calc precisions changing search_num
         precisions = np.array(
-            [precision_score(y_true[:(i+1)], y_pred[:(i+1)], average='micro') for i in xrange(search_num)]
+            [precision_score(y_true[:(i+1)], y_pred[:(i+1)], average='micro', labels=labels) for i in xrange(search_num)]
         )
 
         hit_precisions = precisions[y_true == y_pred]
@@ -43,10 +47,10 @@ class Accuracy:
         return mean_average_precision
 
     @staticmethod
-    def calc_mean_average_precision(y_true_list, y_pred_list):
+    def calc_mean_average_precision(y_true_list, y_pred_list, labels):
         ave_prec_list = []
-        for y_true, y_pred in y_true_list, y_pred_list:
-            ave_prec = Accuracy.average_precision(y_true, y_pred)
+        for y_true, y_pred in zip(y_true_list, y_pred_list):
+            ave_prec = Accuracy.average_precision(y_true, y_pred, labels)
             ave_prec_list.append(ave_prec)
         mean_average_precision = Accuracy.mean_average_precision(ave_prec_list)
         return mean_average_precision
@@ -56,8 +60,9 @@ if __name__=="__main__":
 
     y_true = [1, 0, 1, 0, 1, 1, 0, 0, 0, 0]
     y_pred = [1, 1, 1, 1, 1, 1, 1, 1, 1, 1]
+    labels = [0, 1]
 
-    print Accuracy.average_precision(y_true, y_pred)
+    print Accuracy.average_precision(y_true, y_pred, labels)
 
     y_true = [0, 1, 2, 0, 1, 2]
     y_pred = [0, 2, 1, 0, 0, 1]

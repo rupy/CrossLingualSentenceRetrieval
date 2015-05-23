@@ -8,6 +8,7 @@ import os
 from matplotlib import pyplot as plt
 from sklearn.neighbors import NearestNeighbors
 import yaml
+from accuracy import Accuracy
 
 class Experiment:
 
@@ -21,7 +22,6 @@ class Experiment:
     CONFIG_YAML = 'config.yml'
 
     def __init__(self, line_flag=False):
-
 
         # log setting
         program = os.path.basename(__name__)
@@ -86,7 +86,7 @@ class Experiment:
         self.joint.cca_plot()
         self.joint.gcca_plot()
 
-    def calc_accuracy_changing_sample_num(self, sample_num_list, reg_param=0.1, col_num=5):
+    def calc_accuracy_changing_sample_num(self, sample_num_list, reg_param=0.1):
 
         res_cca_data = []
         res_gcca_data = []
@@ -107,7 +107,6 @@ class Experiment:
         # joint.gcca_transform(mode='PART', line_flag=True, step=5)
         # res_cca_arr = np.load('output/results/res_cca_arr.npy')
         # res_gcca_arr = np.load('output/results/res_gcca_arr.npy')
-        self.plot_results(res_cca_arr, res_gcca_arr, sample_num_list, col_num)
 
     def fit_chenging_regparam(self, reg_params, sample_num=500):
         data_num = self.joint.english_feature.get_train_data_num()
