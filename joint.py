@@ -74,11 +74,11 @@ class Joint():
             self.japanese_feature.create_bow_feature()
             self.image_feature.load_original_feature()
 
-    def pca_train_and_test_data(self):
+    def pca_train_and_test_data(self, train_indices, test_indices):
         self.logger.info("===== compressing features by PCA =====")
-        self.english_feature.pca_train_and_test_data()
-        self.japanese_feature.pca_train_and_test_data()
-        self.image_feature.pca_train_and_test_data()
+        self.english_feature.pca_train_and_test_data(train_indices, test_indices)
+        self.japanese_feature.pca_train_and_test_data(train_indices, test_indices)
+        self.image_feature.pca_train_and_test_data(train_indices, test_indices)
 
     def __get_cca_save_dir(self, sample_num, reg_param):
         return (Joint.LINE_CCA_DIR if self.line_flag else Joint.RAW_CCA_DIR) + str(reg_param).replace(".", "_") + '/' + str(sample_num) + '/'

@@ -6,8 +6,20 @@ import numpy as np
 import base_feature as feat
 from matplotlib import pyplot as plt
 from sklearn.neighbors import NearestNeighbors
+import itertools
 
 class BridgedExperiment(Experiment):
+
+    TRAIN_1_RATIO = 10
+    TRAIN_2_RATIO = 10
+    TRAIN_3_RATIO = 3
+    TEST_RATIO = 1
+
+    TRAIN_1 = 400
+    TRAIN_2 = 400
+    TRAIN_3 = 100
+    TEST = 100
+
 
     def __init__(self, line_flag=False):
 
@@ -25,18 +37,44 @@ class BridgedExperiment(Experiment):
             line_flag
         )
 
-    def fit_changing_sample_num(self, sample_num_list, reg_param=0.01):
-        data_num = self.joint.english_feature.get_train_data_num()
-        sampled_indices1 = feat.BaseFeature.all_indices1(data_num)
-        sampled_indices2 = feat.BaseFeature.all_indices2(data_num)
-        for s in sample_num_list:
-            print s
-            sampled_indices3 = feat.BaseFeature.sample_indices3(data_num, s)
-            self.joint.bcca_fit(s, reg_param, sampled_indices1, sampled_indices2, sampled_indices3)
-            if s != 0:
-                self.joint.cca_fit(s, reg_param, sampled_indices3)
+        self.distribution_list = []
 
-    def calc_accuracy(self, start_dim=1, end_dim=100, dim_step=1, cca_flag=True):
+    def fit_changing_sample_num(self, sample_num_list, distribution_list=None, reg_param=0.01):
+
+        self.joint.create_features()
+
+        data_num = self.joint.english_feature.feature.shape[0]
+
+        # ratio_list = [
+        #     BridgedExperiment.TRAIN_1_RATIO,
+        #     BridgedExperiment.TRAIN_2_RATIO,
+        #     BridgedExperiment.TRAIN_3_RATIO,
+        #     BridgedExperiment.TEST_RATIO,
+        # ]
+        # sampled_indices_list = feat.BaseFeature.sample_indices_with_ratio_list(data_num, ratio_list)
+
+        # distribution_list = [
+        #     BridgedExperiment.TRAIN_1,
+        #     BridgedExperiment.TRAIN_2,
+        #     BridgedExperiment.TRAIN_3,
+        #     BridgedExperiment.TEST,
+        # ]
+
+        self.distribution_list = distribution_list
+
+        sampled_indices_list = feat.BaseFeature.sample_indices(data_num, distribution_list)
+        self.sampled_indices_list = sampled_indices_list
+        train_indices = reduce(lambda x, y: np.r_[x, y], sampled_indices_list[:-1])
+        test_indices = sampled_indices_list[-1]
+        self.joint.pca_train_and_test_data(train_indices, test_indices)
+
+        for s in sample_num_list:
+            if not (s == 0 and len(sampled_indices_list[0]) == 0 and len(sampled_indices_list[1]) == 0):
+                self.joint.bcca_fit(s, reg_param, sampled_indices_list[0], sampled_indices_list[1], sampled_indices_list[2][:s])
+            if s != 0:
+                self.joint.cca_fit(s, reg_param, sampled_indices_list[2][:s])
+
+    def calc_accuracy(self, start_dim=1, end_dim=100, dim_step=1, cca_flag=True, no_data_flag=False):
         res_cca_list = []
         res_bcca_list = []
 
@@ -46,7 +84,10 @@ class BridgedExperiment(Experiment):
                 res_cca = self.cca_calc_search_precision(i)
             else:
                 res_cca = 0
-            res_bcca = self.bcca_calc_search_precision(i)
+            if not no_data_flag:
+                res_bcca = self.bcca_calc_search_precision(i)
+            else:
+                res_bcca = 0
             print "|%d|%f|%f|" % (i, res_cca, res_bcca)
             res_cca_list.append(res_cca)
             res_bcca_list.append(res_bcca)
@@ -65,11 +106,13 @@ class BridgedExperiment(Experiment):
         res_bcca_data = []
 
         for sample_num in sample_num_list:
-            self.joint.bcca_transform(sample_num, reg_param)
+            no_data_flag = sample_num == 0 and self.distribution_list[0] == 0 and self.distribution_list[1] == 0
+            if not no_data_flag:
+                self.joint.bcca_transform(sample_num, reg_param)
             if sample_num != 0:
                 self.joint.cca_transform(sample_num, reg_param)
 
-            res_cca_list, res_bcca_list = self.calc_accuracy(BridgedExperiment.MIN_DIM, BridgedExperiment.MAX_DIM + 1, BridgedExperiment.DIM_STEP, sample_num != 0)
+            res_cca_list, res_bcca_list = self.calc_accuracy(BridgedExperiment.MIN_DIM, BridgedExperiment.MAX_DIM + 1, BridgedExperiment.DIM_STEP, sample_num != 0, no_data_flag)
             res_cca_data.append(res_cca_list)
             res_bcca_data.append(res_bcca_list)
 
@@ -159,8 +202,18 @@ class BridgedExperiment(Experiment):
 
     def plot_max_results(self, res_cca_arr, res_bcca_arr, sample_num_list):
         plt.plot(sample_num_list, res_cca_arr.max(axis=1), '-g', label = "CCA")
-        plt.plot(sample_num_list, res_bcca_arr.max(axis=1), '-b', label = "Bridged CCA")
+        plt.plot(sample_num_list, res_bcca_arr.max(axis=1), '-b', label = "Asymmetric GCCA")
         plt.legend()
         plt.ylabel("top 1 Retrieval Accuracy(%)")
         plt.xlabel("sampling num in <train3>")
+        plt.show()
+
+    def plot_max_list_results(self, res_cca_arr_list, res_bcca_arr_list, sample_num_list):
+        color_iter = itertools.cycle(["b", "g", "r", "c", "m", "y"])
+        plt.plot(sample_num_list, res_cca_arr_list[0].max(axis=1), c="k", marker='.', ls='--', label = "CCA")
+        for i, (res_cca_arr, res_bcca_arr, col) in enumerate(zip(res_cca_arr_list, res_bcca_arr_list, color_iter)):
+            plt.plot(sample_num_list, res_bcca_arr.max(axis=1), c=col, marker='.', ls='-', label = "AGCCA[case %d]" % i)
+        plt.legend(loc="upper left")
+        plt.ylabel("top 1 Retrieval Accuracy(%)")
+        plt.xlabel("sampling num in [train3]")
         plt.show()

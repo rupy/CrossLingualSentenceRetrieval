@@ -39,6 +39,7 @@ class TextFeatures(BaseFeature):
         self.feature = x.toarray()
         self.terms = np.array(self.vectorizer.get_feature_names())
         self.logger.info("created feature: %s", self.feature.shape)
+        self.labels = np.arange(0, self.feature.shape[0])
 
     def create_bow_feature_with_lines(self):
         self.logger.info("creating bow feature as line data")
@@ -53,6 +54,8 @@ class TextFeatures(BaseFeature):
         x = self.vectorizer.fit_transform(corpus_flatten)
         self.feature = x.toarray()
         self.terms = np.array(self.vectorizer.get_feature_names())
+        raw_labels = np.arange(0, self.feature.shape[0])
+        self.labels = raw_labels.repeat(self.line_count, axis=0)
         self.logger.info("created feature: %s", self.feature.shape)
 
     def read_text_by_id(self, text_id):

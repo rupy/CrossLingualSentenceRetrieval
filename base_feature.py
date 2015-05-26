@@ -45,39 +45,37 @@ class BaseFeature():
         self.sampled_train_indices = None
         self.sampled_train_feature = None
 
-    def __get_train_data(self, step=2):
+        self.labels = None
+
+    def __get_train_data(self, train_indices):
         # select every step-th row
-        train_feature = self.feature[::step]
-        train_indices = np.arange(0, self.feature.shape[0], step)
+        train_feature = self.feature[train_indices]
         if self.pca is not None:
             train_feature_pca = self.__pca_feature(train_feature, True)
             self.logger.info("train data shape:%s => %s", train_feature.shape, train_feature_pca.shape)
-            return train_feature_pca, train_indices
+            return train_feature_pca
         else:
             self.logger.info("train data shape:%s", train_feature.shape)
-            return train_feature, train_indices
+            return train_feature
 
-    def __get_test_data(self, step=2):
+    def __get_test_data(self, test_indices):
 
-        if step != 1:
             # select data except for every step-th data
-            test_feature, test_indices = util.skip_rows_by_step(self.feature, step)
-        else:
-            # all data
-            test_feature = self.feature
-            test_indices = np.arange(self.feature.shape[0])
+        test_feature = self.feature[test_indices]
 
         if self.pca is not None:
             test_feature_pca = self.__pca_feature(test_feature, False)
             self.logger.info("test data shape:%s => %s", test_feature.shape, test_feature_pca.shape)
-            return test_feature_pca, test_indices
+            return test_feature_pca
         else:
             self.logger.info("test data shape:%s", test_feature.shape)
-            return test_feature, test_indices
+            return test_feature
 
-    def pca_train_and_test_data(self):
-        self.train_feature_pca, self.train_indices = self.__get_train_data(2)
-        self.test_feature_pca, self.test_indices = self.__get_test_data(2)
+    def pca_train_and_test_data(self, train_indices, test_indices):
+        self.train_feature_pca = self.__get_train_data(train_indices)
+        self.train_indices = np.array(train_indices)
+        self.test_feature_pca = self.__get_test_data(test_indices)
+        self.test_indices = np.array(test_indices)
 
     def __pca_feature(self, feature, fit_flag):
         self.logger.info("compressing feature by compress_dim: %d", self.compress_dim)
@@ -88,7 +86,6 @@ class BaseFeature():
             if fit_flag:
                 self.pca.fit(feature)
             return self.pca.transform(feature)
-
 
     # def save_pca_data(self, feature_dir, prefix):
     #     train_data_pca = self.get_train_data(2)
@@ -107,9 +104,17 @@ class BaseFeature():
     #     self.logger.info("test data shape:%s", self.test_feature_pca.shape)
     #
 
+    def get_label_indices(self, sampled_indices):
+        return np.array(reduce(lambda x,y: x+y, [np.where(self.train_indices == i)[0].tolist() for i in sampled_indices]))
+
     def sample_train_feature(self, sampled_indices):
-        self.sampled_train_feature = self.train_feature_pca[sampled_indices]
-        self.sampled_train_indices = self.train_indices[sampled_indices]
+        if len(sampled_indices) != 0:
+            sampled_label_indices = self.get_label_indices(sampled_indices)
+        else:
+            sampled_label_indices = []
+        print self.train_feature_pca.shape
+        self.sampled_train_feature = self.train_feature_pca[sampled_label_indices]
+        self.sampled_train_indices = self.train_indices[sampled_label_indices]
         self.logger.info("sampled train data shape:%s => %s", self.train_feature_pca.shape, self.sampled_train_feature.shape)
 
         return self.sampled_train_feature
@@ -143,3 +148,40 @@ class BaseFeature():
         all_indices = range(4, data_num, 5)
         sampled_indices = np.random.choice(all_indices, sample_num, False)
         return sorted(sampled_indices)
+
+    @staticmethod
+    def sample_indices(data_num, cut_list, print_flag=True):
+        indices = np.arange(0, data_num)
+        split_indices = util.random_split_list(indices, cut_list)
+        if print_flag:
+            rate_list = [ 1.0 * c / sum(cut_list)for c in cut_list]
+            print "+------------------------------------+"
+            print "|    \   |TRAIN1|TRAIN2|TRAIN3| TEST |"
+            print "+--------+------+------+------+------+"
+            print "|data_num|%6d|%6d|%6d|%6d|" % tuple(cut_list)
+            print "|rate    |%5d%%|%5d%%|%5d%%|%5d%%|" % tuple([int(100 * r) for r in rate_list])
+            print "+------------------------------------+"
+        return split_indices
+
+    @staticmethod
+    def sample_indices_with_ratio_list(data_num, ratio_list, print_flag=True):
+        denominator = sum(ratio_list)
+        rate_list = [ ratio / float(denominator) for ratio in ratio_list]
+        cut_list = [ int(data_num * rate) for rate in rate_list]
+        if print_flag:
+            print "+------------------------------------+"
+            print "|    \   |TRAIN1|TRAIN2|TRAIN3| TEST |"
+            print "+--------+------+------+------+------+"
+            print "|data_num|%6d|%6d|%6d|%6d|" % tuple(cut_list)
+            print "|rate    |%5d%%|%5d%%|%5d%%|%5d%%|" % tuple([int(100 * r) for r in rate_list])
+            print "+------------------------------------+"
+        return BaseFeature.sample_indices(data_num, cut_list, False)
+
+    @staticmethod
+    def sample_test(indices, sample_num):
+        sampled_indices = np.random.choice(indices, sample_num, False)
+        return sorted(sampled_indices)
+if __name__ == '__main__':
+
+    print BaseFeature.sample_indices_with_ratio_list(10, [1, 2])
+

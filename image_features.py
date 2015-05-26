@@ -25,6 +25,7 @@ class ImageFeatures(BaseFeature):
         self.logger.info("creating image feature")
         self.feature = np.load(self.data_dir)
         self.logger.info("created feature: %s", self.feature.shape)
+        self.labels = np.arange(0, self.feature.shape[0])
 
 
     def load_feature_and_copy_line(self, line_count):
@@ -32,6 +33,8 @@ class ImageFeatures(BaseFeature):
         img_feature = np.load(self.data_dir)
         # copy rows
         self.feature = img_feature.repeat(line_count, axis=0)
+        raw_labels = np.arange(0, self.feature.shape[0])
+        self.labels = raw_labels.repeat(line_count, axis=0)
         self.logger.info("created feature: %s", self.feature.shape)
 
     def plot_img_by_id(self, img_id):
