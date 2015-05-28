@@ -8,6 +8,7 @@ from matplotlib import pyplot as plt
 from sklearn.neighbors import NearestNeighbors
 import itertools
 
+
 class BridgedExperiment(Experiment):
 
     TRAIN_1_RATIO = 10
@@ -36,8 +37,16 @@ class BridgedExperiment(Experiment):
             BridgedExperiment.PCA_COMPRESS_IMG_DIM,
             line_flag
         )
+        self.logger.info("<Initilalizing BridgedExperiment>")
 
         self.distribution_list = []
+
+    def can_calc_bcca(self, sample_num):
+        return not (
+            (sample_num == 0 and self.distribution_list[0] == 0)
+            or (sample_num == 0 and self.distribution_list[1] == 0)
+            or (self.distribution_list[0] == 0 and self.distribution_list[1] == 0)
+        )
 
     def fit_changing_sample_num(self, sample_num_list, distribution_list=None, reg_param=0.01):
 
@@ -69,12 +78,19 @@ class BridgedExperiment(Experiment):
         self.joint.pca_train_and_test_data(train_indices, test_indices)
 
         for s in sample_num_list:
-            if not (s == 0 and len(sampled_indices_list[0]) == 0 and len(sampled_indices_list[1]) == 0):
+            self.logger.info("sampling num: %d", s)
+            if self.can_calc_bcca(s):
                 self.joint.bcca_fit(s, reg_param, sampled_indices_list[0], sampled_indices_list[1], sampled_indices_list[2][:s])
+            else:
+                self.logger.info("cannot calculate bridged GCCA in this sampling num")
+                self.logger.info("skip calculation")
             if s != 0:
                 self.joint.cca_fit(s, reg_param, sampled_indices_list[2][:s])
+            else:
+                self.logger.info("cannot calculate CCA in this sampling num")
+                self.logger.info("skip calculation")
 
-    def calc_accuracy(self, start_dim=1, end_dim=100, dim_step=1, cca_flag=True, no_data_flag=False):
+    def calc_accuracy(self, start_dim=1, end_dim=100, dim_step=1, cca_flag=True, can_calc_flag=True):
         res_cca_list = []
         res_bcca_list = []
 
@@ -84,7 +100,7 @@ class BridgedExperiment(Experiment):
                 res_cca = self.cca_calc_search_precision(i)
             else:
                 res_cca = 0
-            if not no_data_flag:
+            if can_calc_flag:
                 res_bcca = self.bcca_calc_search_precision(i)
             else:
                 res_bcca = 0
@@ -105,16 +121,46 @@ class BridgedExperiment(Experiment):
         res_cca_data = []
         res_bcca_data = []
 
-        for sample_num in sample_num_list:
-            no_data_flag = sample_num == 0 and self.distribution_list[0] == 0 and self.distribution_list[1] == 0
-            if not no_data_flag:
-                self.joint.bcca_transform(sample_num, reg_param)
-            if sample_num != 0:
-                self.joint.cca_transform(sample_num, reg_param)
+        for s in sample_num_list:
+            if self.can_calc_bcca(s):
+                self.joint.bcca_transform(s, reg_param)
+            if s != 0:
+                self.joint.cca_transform(s, reg_param)
 
-            res_cca_list, res_bcca_list = self.calc_accuracy(BridgedExperiment.MIN_DIM, BridgedExperiment.MAX_DIM + 1, BridgedExperiment.DIM_STEP, sample_num != 0, no_data_flag)
+            res_cca_list, res_bcca_list = self.calc_accuracy(BridgedExperiment.MIN_DIM, BridgedExperiment.MAX_DIM + 1, BridgedExperiment.DIM_STEP, s != 0, self.can_calc_bcca(s))
             res_cca_data.append(res_cca_list)
             res_bcca_data.append(res_bcca_list)
+
+        res_cca_arr = np.array(res_cca_data)
+        res_bcca_arr = np.array(res_bcca_data)
+        # np.save('output/results/res_cca_arr.npy', res_cca_arr)
+        # np.save('output/results/res_bcca_arr.npy', res_bcca_arr)
+
+        # joint.bcca_transform(mode='PART', line_flag=True, step=5)
+        # res_cca_arr = np.load('output/results/res_cca_arr.npy')
+        # res_bcca_arr = np.load('output/results/res_bcca_arr.npy')
+
+        return res_cca_arr, res_bcca_arr
+
+    def calc_corrcoef_changing_sample_num(self, sample_num_list, reg_param=0.01):
+
+        res_cca_data = []
+        res_bcca_data = []
+
+        for s in sample_num_list:
+            if self.can_calc_bcca(s):
+                self.joint.bcca_transform(s, reg_param)
+                res_pair_bcca_list, res_cor_bcca_list = self.joint.get_bcca_correlatins()
+            else:
+                res_pair_bcca_list, res_cor_bcca_list = [[0,1],[1,2],[0,2]], [0, 0, 0]
+            if s != 0:
+                self.joint.cca_transform(s, reg_param)
+                res_pair_cca_list, res_cor_cca_list = self.joint.get_cca_correlatins()
+            else:
+                res_pair_cca_list, res_cor_cca_list = [[0,1]],[0]
+
+            res_cca_data.append(res_cor_cca_list)
+            res_bcca_data.append(res_cor_bcca_list)
 
         res_cca_arr = np.array(res_cca_data)
         res_bcca_arr = np.array(res_bcca_data)
@@ -212,8 +258,25 @@ class BridgedExperiment(Experiment):
         color_iter = itertools.cycle(["b", "g", "r", "c", "m", "y"])
         plt.plot(sample_num_list, res_cca_arr_list[0].max(axis=1), c="k", marker='.', ls='--', label = "CCA")
         for i, (res_cca_arr, res_bcca_arr, col) in enumerate(zip(res_cca_arr_list, res_bcca_arr_list, color_iter)):
-            plt.plot(sample_num_list, res_bcca_arr.max(axis=1), c=col, marker='.', ls='-', label = "AGCCA[case %d]" % i)
+            plt.plot(sample_num_list, res_bcca_arr.max(axis=1), c=col, marker='.', ls='-', label = "AGCCA[case %d]" % (i + 1))
         plt.legend(loc="upper left")
         plt.ylabel("top 1 Retrieval Accuracy(%)")
         plt.xlabel("sampling num in [train3]")
+        plt.show()
+
+    def plot_cor_list_results(self, res_cca_arr_list, res_bcca_arr_list, sample_num_list):
+        plt.figure()
+        pair_list = [[0,1],[1,2],[0,2]]
+        for i, res_bcca_arr in enumerate(np.array(res_bcca_arr_list).transpose(2, 0, 1)):
+            color_iter = itertools.cycle(["b", "g", "r", "c", "m", "y"])
+            plt.subplot(2, 2, i + 1)
+            if i == 2:
+                plt.plot(sample_num_list, res_cca_arr_list[0][:,0], c="k", marker='.', ls='--', label = "CCA")
+            for j, (res_bcca, col) in enumerate(zip(res_bcca_arr, color_iter)):
+                plt.plot(sample_num_list, res_bcca, c=col, marker='.', ls='-', label = "AGCCA[case %d]" % (j + 1))
+            plt.ylabel("Correlation (%d, %d)" % (pair_list[i][0] + 1, pair_list[i][1] + 1))
+            plt.xlabel("sampling num in [train3]")
+            if i == 2:
+                plt.legend(loc="upper left", bbox_to_anchor=(1.15, 0.95))
+        plt.tight_layout()
         plt.show()

@@ -78,7 +78,6 @@ class BridgedJoint(Joint):
             sampled_jp2,
 
             sampled_en3,
-            sampled_img3,
             sampled_jp3,
         )
 
@@ -101,11 +100,20 @@ class BridgedJoint(Joint):
         )
 
     def bcca_plot(self):
-        self.bcca.plot_result()
+        self.bcca.plot_result('AGCCA')
 
     def compare_correlation_coefficient(self):
         self.cca.calc_correlations()
         self.bcca.calc_correlations()
+
+    def get_cca_correlatins(self):
+        pair_list_cca, cor_list_cca = self.cca.get_correlations()
+        return pair_list_cca, cor_list_cca
+
+    def get_bcca_correlatins(self):
+        pair_list_bcca, cor_list_bcca = self.bcca.get_correlations()
+        return pair_list_bcca, cor_list_bcca
+
 
 if __name__=="__main__":
     pass
