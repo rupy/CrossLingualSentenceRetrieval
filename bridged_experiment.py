@@ -7,7 +7,8 @@ import base_feature as feat
 from matplotlib import pyplot as plt
 from sklearn.neighbors import NearestNeighbors
 import itertools
-
+# import seaborn as sns
+import scipy.stats as ss
 
 class BridgedExperiment(Experiment):
 
@@ -256,9 +257,13 @@ class BridgedExperiment(Experiment):
 
     def plot_max_list_results(self, res_cca_arr_list, res_bcca_arr_list, sample_num_list):
         color_iter = itertools.cycle(["b", "g", "r", "c", "m", "y"])
-        plt.plot(sample_num_list, res_cca_arr_list[0].max(axis=1), c="k", marker='.', ls='--', label = "CCA")
+        plt.plot(sample_num_list, res_cca_arr_list[0].mean(axis=0).max(axis=1), c="k", marker='.', ls='--', label = "CCA")
         for i, (res_cca_arr, res_bcca_arr, col) in enumerate(zip(res_cca_arr_list, res_bcca_arr_list, color_iter)):
-            plt.plot(sample_num_list, res_bcca_arr.max(axis=1), c=col, marker='.', ls='-', label = "AGCCA[case %d]" % (i + 1))
+            data_m = res_bcca_arr.mean(axis=0).max(axis=1)
+            data_df = np.array([res_bcca_arr.shape[0]] * res_bcca_arr.shape[1]) - 1
+            data_sd = res_bcca_arr.max(axis=2).std(axis=0)
+            error = ss.t.ppf(0.95, data_df) * data_sd
+            plt.errorbar(sample_num_list, data_m, c=col, marker='.', ls='-', label = "AGCCA[case %d]" % (i + 1), yerr=error, fmt='-o')
         plt.legend(loc="upper left")
         plt.ylabel("top 1 Retrieval Accuracy(%)")
         plt.xlabel("sampling num in [train3]")

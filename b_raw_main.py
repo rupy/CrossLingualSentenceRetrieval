@@ -25,7 +25,7 @@ if __name__=="__main__":
         ]
 
     # calc average of fit & result
-    try_num = 1
+    try_num = 50
     cca_avg_list = []
     bcca_avg_list = []
     cca_cor_avg_list = []
@@ -47,8 +47,8 @@ if __name__=="__main__":
 
         res_cca_arr = np.array(res_cca_list)
         res_bcca_arr = np.array(res_bcca_list)
-        cca_avg = res_cca_arr.mean(axis=0)
-        bcca_avg = res_bcca_arr.mean(axis=0)
+        cca_avg = res_cca_arr
+        bcca_avg = res_bcca_arr
         cca_avg_list.append(cca_avg)
         bcca_avg_list.append(bcca_avg)
 
