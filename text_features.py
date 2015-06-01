@@ -4,6 +4,7 @@
 __author__ = 'rupy'
 
 from sklearn.feature_extraction.text import CountVectorizer
+from sklearn.feature_extraction.text import TfidfVectorizer
 import os
 import numpy as np
 from base_feature import BaseFeature
@@ -32,30 +33,45 @@ class TextFeatures(BaseFeature):
     def create_bow_feature(self):
         self.logger.info("creating bow feature")
 
+        # read text files
         dirs = os.listdir(self.data_dir)
         dirs_sorted = sorted(dirs, int_sort)
         corpus = [ open(self.data_dir + file_name, 'r').read() for file_name in dirs_sorted]
+
+        # create features
         x = self.vectorizer.fit_transform(corpus)
         self.feature = x.toarray()
+
+        # store additional information
         self.terms = np.array(self.vectorizer.get_feature_names())
-        self.logger.info("created feature: %s", self.feature.shape)
         self.labels = np.arange(0, self.feature.shape[0])
+
+        self.logger.info("created feature: %s", self.feature.shape)
 
     def create_bow_feature_with_lines(self):
         self.logger.info("creating bow feature as line data")
 
+        # read text files
         dirs = os.listdir(self.data_dir)
         dirs_sorted = sorted(dirs, int_sort)
         corpus = [ open(self.data_dir + file_name, 'r').readlines() for file_name in dirs_sorted]
+
+        # create line count data
         corpus_flatten = reduce(lambda x,y:x+y,corpus) # flatten list
         line_count = [[i + 1] * len(line) for i, line in enumerate(corpus)]
         self.data_num_label = reduce(lambda x,y:x+y,line_count)
         self.line_count = [ len(line) for line in corpus]
+        self.logger.info("line num: %d", len(corpus_flatten))
+
+        # create features
         x = self.vectorizer.fit_transform(corpus_flatten)
         self.feature = x.toarray()
+
+        # store additional information
         self.terms = np.array(self.vectorizer.get_feature_names())
-        raw_labels = np.arange(0, self.feature.shape[0])
+        raw_labels = np.arange(0, len(corpus))
         self.labels = raw_labels.repeat(self.line_count, axis=0)
+
         self.logger.info("created feature: %s", self.feature.shape)
 
     def read_text_by_id(self, text_id):

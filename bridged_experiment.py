@@ -54,6 +54,7 @@ class BridgedExperiment(Experiment):
         self.joint.create_features()
 
         data_num = self.joint.english_feature.feature.shape[0]
+        print data_num
 
         # ratio_list = [
         #     BridgedExperiment.TRAIN_1_RATIO,

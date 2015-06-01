@@ -10,19 +10,28 @@ import numpy as np
 if __name__=="__main__":
     logging.root.setLevel(level=logging.INFO)
 
-    ex = bridged_experiment.BridgedExperiment(False)
+    line_flag = True
+    ex = bridged_experiment.BridgedExperiment(line_flag)
 
     # ex.fit_changing_sample_num(sample_num_list=[2000, 1500, 1000, 500])
     #
     # ex.calc_accuracy_changing_sample_num(sample_num_list=[2000, 1500, 1000, 500])
 
-    sample_list = range(0, 100 + 1, 10)
-    distribution_list_list = [
-        [100, 100, 700, 100],
-        [200, 200, 500, 100],
-        [300, 300, 300, 100],
-        [400, 400, 100, 100],
-        ]
+    sample_list = range(0, 500 + 1, 50)
+    if line_flag:
+        distribution_list_list = [
+            [500, 500, 3500, 498],
+            [1000, 1000, 2500, 498],
+            [1500, 1500, 1500, 498],
+            [2000, 2000, 500, 498],
+            ]
+    else:
+        distribution_list_list = [
+            [100, 100, 700, 100],
+            [200, 200, 500, 100],
+            [300, 300, 300, 100],
+            [400, 400, 100, 100],
+            ]
 
     # calc average of fit & result
     try_num = 50
