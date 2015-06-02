@@ -63,16 +63,16 @@ class Joint():
         if not os.path.isdir(Joint.FEATURE_DIR):
             os.mkdir(Joint.FEATURE_DIR)
 
-    def create_features(self):
+    def create_features(self, feature_file=None):
         self.logger.info("===== creating features =====")
         if self.line_flag:
             self.english_feature.create_bow_feature_with_lines()
             self.japanese_feature.create_bow_feature_with_lines()
-            self.image_feature.load_feature_and_copy_line(self.english_feature.line_count)
+            self.image_feature.load_feature_and_copy_line(self.english_feature.line_count, feature_file)
         else:
             self.english_feature.create_bow_feature()
             self.japanese_feature.create_bow_feature()
-            self.image_feature.load_original_feature()
+            self.image_feature.load_original_feature(feature_file)
 
     def pca_train_and_test_data(self, train_indices, test_indices):
         self.logger.info("===== compressing features by PCA =====")

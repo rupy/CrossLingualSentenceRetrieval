@@ -17,8 +17,8 @@ if __name__=="__main__":
     #
     # ex.calc_accuracy_changing_sample_num(sample_num_list=[2000, 1500, 1000, 500])
 
-    sample_list = range(0, 500 + 1, 50)
     if line_flag:
+        sample_list = range(0, 500 + 1, 50)
         distribution_list_list = [
             [500, 500, 3500, 498],
             [1000, 1000, 2500, 498],
@@ -26,6 +26,7 @@ if __name__=="__main__":
             [2000, 2000, 500, 498],
             ]
     else:
+        sample_list = range(0, 100 + 1, 10)
         distribution_list_list = [
             [100, 100, 700, 100],
             [200, 200, 500, 100],

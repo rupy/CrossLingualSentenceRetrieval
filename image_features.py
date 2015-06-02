@@ -21,18 +21,24 @@ class ImageFeatures(BaseFeature):
 
         self.correspondence_path = correspondence_path
 
-    def load_original_feature(self):
+    def load_original_feature(self, feature_file=None):
         self.logger.info("creating image feature")
-        self.feature = np.load(self.data_dir)
+        if feature_file is not None:
+            self.feature = np.load(feature_file)
+        else:
+            self.feature = np.load(self.data_dir)
         self.logger.info("created feature: %s", self.feature.shape)
         self.labels = np.arange(0, self.feature.shape[0])
 
 
-    def load_feature_and_copy_line(self, line_count):
+    def load_feature_and_copy_line(self, line_count, feature_file=None):
         self.logger.info("creating image feature and copy")
 
         # load feature
-        img_feature = np.load(self.data_dir)
+        if feature_file is not None:
+            img_feature = np.load(feature_file)
+        else:
+            img_feature = np.load(self.data_dir)
 
         # copy rows
         self.feature = img_feature.repeat(line_count, axis=0)

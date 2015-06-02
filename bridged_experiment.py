@@ -49,9 +49,9 @@ class BridgedExperiment(Experiment):
             or (self.distribution_list[0] == 0 and self.distribution_list[1] == 0)
         )
 
-    def fit_changing_sample_num(self, sample_num_list, distribution_list=None, reg_param=0.01):
+    def fit_changing_sample_num(self, sample_num_list, distribution_list=None, reg_param=0.01, feature_file=None):
 
-        self.joint.create_features()
+        self.joint.create_features(feature_file)
 
         data_num = self.joint.english_feature.feature.shape[0]
         print data_num
@@ -285,4 +285,14 @@ class BridgedExperiment(Experiment):
             if i == 2:
                 plt.legend(loc="upper left", bbox_to_anchor=(1.15, 0.95))
         plt.tight_layout()
+        plt.show()
+
+    def plot_max_list_img_changing(self, res_bcca_arr_list, sample_num_list, feature_list):
+        color_iter = itertools.cycle(["b", "g", "r", "c", "m", "y"])
+        for i, (res_bcca_arr, feat, col) in enumerate(zip(res_bcca_arr_list, feature_list, color_iter)):
+            data_m = res_bcca_arr.mean(axis=0).max(axis=1)
+            plt.plot(sample_num_list, data_m, c=col, marker='.', ls='-', label=feat)
+        plt.legend(loc="upper left")
+        plt.ylabel("top 1 Retrieval Accuracy(%)")
+        plt.xlabel("sampling num in [train3]")
         plt.show()
